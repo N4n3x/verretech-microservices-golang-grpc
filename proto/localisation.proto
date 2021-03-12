@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package localisation;
+option go_package="./generic/localisationpb";
+
+message Localisation {
+    string adresse = 2;
+    string ville = 3;
+    string cp = 4;
+}

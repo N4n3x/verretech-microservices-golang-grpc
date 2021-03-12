@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package utilisateur;
+option go_package="./utilisateur/utilisateurpb";
+import "proto/pointRetrait.proto";
+import "proto/localisation.proto";
+
+message Preferences {
+    localisation.Localisation localisation = 1;
+    pointRetrait.PointRetrait pointRetrait = 2;
+}
+
+message Utilisateur {
+    string nom = 1;
+    string prenom = 2;
+    string mail = 3;
+    string hashMotDePasse = 4;
+    Preferences preferences = 5;
+    repeated string permission = 6;
+}
+
+message UtilisateurRequest {
+    Utilisateur utilisateur = 1;
+}
+
+message UtilisateurResponse {
+    Utilisateur utilisateur = 1;
+}
+
+message AuthResponse {
+    string token = 1;
+}
+
+service ServiceUtilisateur {
+    rpc UpdateUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
+    rpc GetUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
+    rpc Auth(UtilisateurRequest) returns (AuthResponse);
+}

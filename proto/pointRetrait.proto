@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pointRetrait;
+option go_package="./generic/pointRetraitpb";
+import "proto/localisation.proto";
+
+message PointRetrait {
+    string nom = 1;
+    localisation.Localisation localisation = 2;
+}

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package panier;
+option go_package="./panier/panierpb";
+import "proto/utilisateur.proto";
+import "proto/produit.proto";
+
+message Article {
+    produit.Produit produit = 1;
+    int32 qte = 2;
+}
+
+message Panier {
+    utilisateur.Utilisateur utilisateur = 1;
+    repeated Article article = 2;
+}
+
+message PanierRequest {
+    Panier panier = 1;
+}
+
+message ByUtilisateurRequest {
+    utilisateur.Utilisateur utilisateur = 1;
+}
+
+message PanierResponse {
+    Panier panier = 1;
+}
+
+service ServicePanier {
+    rpc UpdatePanier(PanierRequest) returns (PanierResponse);
+    rpc GetPanier(ByUtilisateurRequest) returns (PanierResponse);
+}

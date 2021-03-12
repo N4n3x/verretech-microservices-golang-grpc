@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package commande;
+option go_package="./commande/commandepb";
+import "proto/panier.proto";
+import "proto/utilisateur.proto";
+
+message Commande {
+    panier.Panier panier = 1;
+    int64 timestamp = 2;
+    string statut = 3;
+    string ref = 4;
+}
+
+message ListCommandes {
+    repeated Commande commandes = 1;
+}
+
+message CommandeRequest {
+    Commande commande = 1;
+}
+
+message CommandeResponse {
+    Commande commande = 1;
+}
+
+message LastCommandesRequest {}
+
+message CommandesResponse {
+    ListCommandes ListCommandes = 1;
+}
+
+message ByUtilisateurRequest {
+    utilisateur.Utilisateur utilisateur = 1;
+}
+
+service ServiceCommande {
+    rpc ValidateCommande (CommandeRequest) returns (CommandeResponse);
+    rpc SubmitCommande (CommandeRequest) returns (CommandeResponse);
+    rpc GetLastCommandes(LastCommandesRequest) returns (CommandesResponse);
+    rpc GetUserCommandes(ByUtilisateurRequest) returns (CommandesResponse);
+}

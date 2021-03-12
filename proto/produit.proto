@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package produit;
+option go_package="./produit/produitpb";
+import "proto/pointRetrait.proto";
+
+message Stock {
+    pointRetrait.PointRetrait pointRetrait = 1;
+    int32 qte = 2;
+}
+
+message Photo {
+    string url = 1;
+}
+
+message Produit {
+    string ref = 1;
+    string description = 2;
+    float prix = 3;
+    repeated Photo photos = 4;
+    repeated Stock stocks = 5;
+    repeated string tags = 6;
+}
+
+message ListProduits {
+    repeated Produit produits = 1;
+}
+
+message ProduitsRequest {
+    ListProduits listproduits = 1;
+}
+
+message GetAllProduitsRequest {}
+
+message ProduitResponse {
+    Produit produit = 1;
+}
+
+message ProduitsResponse {
+    ListProduits listproduits = 1;
+}
+
+service ServiceProduit {
+    rpc UpdateProduits (ProduitsRequest) returns (ProduitsResponse);
+    rpc GetAllProduits (GetAllProduitsRequest) returns (ProduitsResponse);
+    rpc GetProduitByRef(GetAllProduitsRequest) returns (Produit);
+}
