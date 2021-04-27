@@ -2,10 +2,20 @@ syntax = "proto3";
 
 package produit;
 option go_package="./produit/produitpb";
-import "proto/pointRetrait.proto";
+
+message Localisation {
+    string adresse = 2;
+    string ville = 3;
+    string cp = 4;
+}
+
+message PointRetrait {
+    string nom = 1;
+    Localisation localisation = 2;
+}
 
 message Stock {
-    pointRetrait.PointRetrait pointRetrait = 1;
+    PointRetrait pointRetrait = 1;
     int32 qte = 2;
 }
 
@@ -14,12 +24,13 @@ message Photo {
 }
 
 message Produit {
-    string ref = 1;
-    string description = 2;
-    float prix = 3;
-    repeated Photo photos = 4;
-    repeated Stock stocks = 5;
-    repeated string tags = 6;
+    string ID = 1;
+    string ref = 2;
+    string description = 3;
+    float prix = 4;
+    repeated Photo photos = 5;
+    repeated Stock stocks = 6;
+    repeated string tags = 7;
 }
 
 message ListProduits {
@@ -28,6 +39,10 @@ message ListProduits {
 
 message ProduitsRequest {
     ListProduits listproduits = 1;
+}
+
+message ProduitRequest {
+    Produit produit = 1;
 }
 
 message GetAllProduitsRequest {}
@@ -41,6 +56,7 @@ message ProduitsResponse {
 }
 
 service ServiceProduit {
+    rpc AddProduit (ProduitRequest) returns (Produit);
     rpc UpdateProduits (ProduitsRequest) returns (ProduitsResponse);
     rpc GetAllProduits (GetAllProduitsRequest) returns (ProduitsResponse);
     rpc GetProduitByRef(GetAllProduitsRequest) returns (Produit);

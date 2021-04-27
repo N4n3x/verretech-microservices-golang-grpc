@@ -3,7 +3,7 @@ package documents
 import (
 	"context"
 	"N4n3x/verretech-microservices/produit/produitpb"
-
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,7 +34,7 @@ type Photo struct {
 
 type Produit struct {
 	ID			primitive.ObjectID `bson:"_id,omitempty"`
-	Ref         string   `bson:"ref,omitempty"`
+	Ref         string   `bson:"ref"`
 	Description string   `bson:"description"`
 	Prix        float32  `bson:"prix"`
 	Photos      []*Photo `bson:"photos"`
@@ -44,21 +44,22 @@ type Produit struct {
 
 //InsertOne inserts one post in the database
 func (produit *Produit) InsertOne(db mongo.Database) (primitive.ObjectID, error) {
+	fmt.Printf("befor insert %+v\n",produit)
 	collection := db.Collection(produitCollection)
 	result, err := collection.InsertOne(context.Background(), produit)
 	if err != nil {
-		return "Erreur", err
+		return primitive.NilObjectID, err
 	}
 
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-//FindOne returns the post with the specified ID from the database
+//FindOne returns the product with the specified ID from the database
 func (produit *Produit) FindOne(db mongo.Database) error {
 	collection := db.Collection(produitCollection)
 	filter := bson.M{"ref": produit.Ref}
 
-	err := collection.FindOne(context.Background(), filter).Decode(post)
+	err := collection.FindOne(context.Background(), filter).Decode(produit)
 	if err != nil {
 		return err
 	}
@@ -66,13 +67,13 @@ func (produit *Produit) FindOne(db mongo.Database) error {
 	return nil
 }
 
-//Find returns a cursor pointin to all the posts in the db
+//Find returns a cursor pointin to all the produits in the db
 func Find(db mongo.Database) (*mongo.Cursor, error) {
 	collection := db.Collection(produitCollection)
 	return collection.Find(context.Background(), bson.D{{}})
 }
 
-//Update updates the specified post within the database
+//Update updates the specified produit within the database
 func (produit *Produit) Update(db mongo.Database) error {
 	collection := db.Collection(produitCollection)
 	update := bson.M{
@@ -81,8 +82,8 @@ func (produit *Produit) Update(db mongo.Database) error {
 			"description": produit.Description,
 			"prix": produit.Prix,
 			"photos": produit.Photos,
-			"stocks": produit.Stock,
-			"tags": produit.Tags
+			"stocks": produit.Stocks,
+			"tags": produit.Tags,
 		},
 	}
 	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update)
@@ -92,33 +93,75 @@ func (produit *Produit) Update(db mongo.Database) error {
 	return nil
 }
 
-//FromPostPB parses a post defined by the protobuff into a mongo post document
+//FromProduitPB parses a produit defined by the protobuff into a mongo produit document
 func FromProduitPB(produitProto *produitpb.Produit) (*Produit, error) {
-	oid, err := primitive.ObjectIDFromHex(produitProto.ID)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Printf("%+v\n",produitProto)
+	var produit = new(Produit)
+	var photos []*Photo
+	var stocks []*Stock
 
-	return &Produit{
-		ID:       		oid,
-		Ref: 			produitProto.Ref,
-		Description: 	produitProto.Description,
-		Prix: 			produitProto.Prix,
-		Photos: 		produitProto.Photos,
-		Stocks: 		produitProto.Stocks,
-		Tags: 			produitProto.Tags
-	}, nil
+	if produitProto.ID != "" {
+		oid, _ := primitive.ObjectIDFromHex(produitProto.ID)
+		produit.ID = oid
+	}
+	
+	
+	
+	for _, e := range produitProto.Photos {
+		p := &Photo{Url: e.Url}
+		photos = append(photos, p)
+	}
+	produit.Photos = photos
+	// fmt.Printf("%+v\n",photos)
+	
+	for _, e := range produitProto.Stocks {
+		l := &Localisation{Adresse: e.PointRetrait.Localisation.Adresse, Ville: e.PointRetrait.Localisation.Ville, Cp: e.PointRetrait.Localisation.Cp}
+		pr := &PointRetrait{Nom: e.PointRetrait.Nom, Localisation: l}
+		s := &Stock{PointRetrait: pr, Qte: e.Qte}
+		stocks = append(stocks, s)
+	}
+	produit.Stocks = stocks
+
+	produit.Ref = produitProto.Ref
+	produit.Description = produitProto.Description
+	produit.Prix = produitProto.Prix
+	produit.Tags = produitProto.Tags
+	// produit := &Produit{
+	// 	Ref: 			produitProto.Ref,
+	// 	Description: 	produitProto.Description,
+	// 	Prix: 			produitProto.Prix,
+	// 	Photos: 		photos,
+	// 	Stocks: 		stocks,
+	// 	Tags: 			produitProto.Tags,
+	// }
+	
+	fmt.Printf("End convert %+v\n",produit)
+	return produit, nil
 }
 
-//ToPostPB parses a mongo post document into a post defined by the protobuff
+//ToProduitPB parses a mongo produit document into a produit defined by the protobuff
 func (produit *Produit) ToProduitPB() *produitpb.Produit {
+	var photos []*produitpb.Photo
+	for _, e := range produit.Photos {
+		p := &produitpb.Photo{Url: e.Url}
+		photos = append(photos, p)
+	}
+
+	var stocks []*produitpb.Stock
+	for _, e := range produit.Stocks {
+		l := &produitpb.Localisation{Adresse: e.PointRetrait.Localisation.Adresse, Ville: e.PointRetrait.Localisation.Ville, Cp: e.PointRetrait.Localisation.Cp}
+		pr := &produitpb.PointRetrait{Nom: e.PointRetrait.Nom, Localisation: l}
+		s := &produitpb.Stock{PointRetrait: pr, Qte: e.Qte}
+		stocks = append(stocks, s)
+	}
+
 	return &produitpb.Produit{
 		ID:       		produit.ID.Hex(),
 		Ref:			produit.Ref,
 		Description: 	produit.Description,
 		Prix: 			produit.Prix,
-		Photos: 		produit.Photos,
-		Stocks: 		produit.Stocks,
-		Tags: 			produit.Tags
+		Photos: 		photos,
+		Stocks: 		stocks,
+		Tags: 			produit.Tags,
 	}
 }

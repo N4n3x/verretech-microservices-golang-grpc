@@ -17,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceProduitClient interface {
+	AddProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*Produit, error)
 	UpdateProduits(ctx context.Context, in *ProduitsRequest, opts ...grpc.CallOption) (*ProduitsResponse, error)
 	GetAllProduits(ctx context.Context, in *GetAllProduitsRequest, opts ...grpc.CallOption) (*ProduitsResponse, error)
 	GetProduitByRef(ctx context.Context, in *GetAllProduitsRequest, opts ...grpc.CallOption) (*Produit, error)
@@ -28,6 +29,15 @@ type serviceProduitClient struct {
 
 func NewServiceProduitClient(cc grpc.ClientConnInterface) ServiceProduitClient {
 	return &serviceProduitClient{cc}
+}
+
+func (c *serviceProduitClient) AddProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*Produit, error) {
+	out := new(Produit)
+	err := c.cc.Invoke(ctx, "/produit.ServiceProduit/AddProduit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *serviceProduitClient) UpdateProduits(ctx context.Context, in *ProduitsRequest, opts ...grpc.CallOption) (*ProduitsResponse, error) {
@@ -61,6 +71,7 @@ func (c *serviceProduitClient) GetProduitByRef(ctx context.Context, in *GetAllPr
 // All implementations must embed UnimplementedServiceProduitServer
 // for forward compatibility
 type ServiceProduitServer interface {
+	AddProduit(context.Context, *ProduitRequest) (*Produit, error)
 	UpdateProduits(context.Context, *ProduitsRequest) (*ProduitsResponse, error)
 	GetAllProduits(context.Context, *GetAllProduitsRequest) (*ProduitsResponse, error)
 	GetProduitByRef(context.Context, *GetAllProduitsRequest) (*Produit, error)
@@ -71,6 +82,9 @@ type ServiceProduitServer interface {
 type UnimplementedServiceProduitServer struct {
 }
 
+func (UnimplementedServiceProduitServer) AddProduit(context.Context, *ProduitRequest) (*Produit, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddProduit not implemented")
+}
 func (UnimplementedServiceProduitServer) UpdateProduits(context.Context, *ProduitsRequest) (*ProduitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProduits not implemented")
 }
@@ -91,6 +105,24 @@ type UnsafeServiceProduitServer interface {
 
 func RegisterServiceProduitServer(s grpc.ServiceRegistrar, srv ServiceProduitServer) {
 	s.RegisterService(&_ServiceProduit_serviceDesc, srv)
+}
+
+func _ServiceProduit_AddProduit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProduitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceProduitServer).AddProduit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/produit.ServiceProduit/AddProduit",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceProduitServer).AddProduit(ctx, req.(*ProduitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ServiceProduit_UpdateProduits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -151,6 +183,10 @@ var _ServiceProduit_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "produit.ServiceProduit",
 	HandlerType: (*ServiceProduitServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddProduit",
+			Handler:    _ServiceProduit_AddProduit_Handler,
+		},
 		{
 			MethodName: "UpdateProduits",
 			Handler:    _ServiceProduit_UpdateProduits_Handler,
