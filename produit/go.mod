@@ -1,4 +1,4 @@
-module N4n3x/verretech-microservices/produit
+module verretech-microservices/produit
 
 go 1.16
 

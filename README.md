@@ -4,8 +4,8 @@ Architecture micro services en GO pour site e-Commerce
 ## TODO
 ### Produit
 * ✅ Création interface GRPC
-* 🛠 Connexion à la base de données
-* ⏳ Conception des fonctions métiers
+* ✅ Connexion à la base de données
+* 🛠 Conception des fonctions métiers
 ### Utilisateur
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données
@@ -26,3 +26,25 @@ Architecture micro services en GO pour site e-Commerce
 ### ERP
 * ⏳ Création connecteur ERP
 * ⏳ Conseption taches récurentes
+
+### Endpoints Gateway
+* Produit
+  * GET /produit?params=###
+  * GET /produit/ID
+* Utilisateur
+  * POST /utilisateur
+  * GET /utilisateur?params=###
+  * GET /utilisateur/ID
+  * PUT /utilisateur/ID
+  * DELETE /utilisateur/ID
+* Panier
+  * POST /panier
+  * GET /panier?params=###
+  * GET /panier/ID
+  * PUT /panier/ID
+* Commande
+  * POST /commande
+  * GET /commande?params=###
+  * GET /commande/ID
+* Indicateur
+  * GET /indicateur?params=###

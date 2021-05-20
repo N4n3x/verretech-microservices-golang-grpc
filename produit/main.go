@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"N4n3x/verretech-microservices/database"
-	"N4n3x/verretech-microservices/produit/documents"
-	"N4n3x/verretech-microservices/produit/produitpb"
 	"log"
 	"net"
+	"verretech-microservices/database"
+	"verretech-microservices/produit/documents"
+	"verretech-microservices/produit/produitpb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,7 +21,7 @@ type server struct {
 
 func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.Produit, error) {
 	mongoProduit, _ := documents.FromProduitPB(req.Produit)
-	fmt.Printf("Mongo produit %+v\n",mongoProduit)
+	fmt.Printf("Mongo produit %+v\n", mongoProduit)
 	oid, err := mongoProduit.InsertOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
