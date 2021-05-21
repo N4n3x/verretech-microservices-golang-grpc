@@ -14,7 +14,7 @@ variables:
 before_script:
   - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
   - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
-  - cd $GOPATH/src/$REPO_NAME
+  - cd $REPO_NAME
   - pwd
 
 stages:
@@ -32,7 +32,7 @@ stages:
 compile:
   stage: build
   script:
-    - go build -o./ ./produit
+    - go build -o. ./produit
   artifacts:
     paths:
       - mybinary
