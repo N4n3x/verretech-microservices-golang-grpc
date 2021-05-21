@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package commande;
-option go_package="./commande/commandepb";
+option go_package="verretech-microservices/commande/commandepb";
 import "proto/panier.proto";
 import "proto/utilisateur.proto";
 

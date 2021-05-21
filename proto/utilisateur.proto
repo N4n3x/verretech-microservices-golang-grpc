@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package utilisateur;
-option go_package="./utilisateur/utilisateurpb";
+option go_package="verretech-microservices/utilisateur/utilisateurpb";
 import "proto/pointRetrait.proto";
 import "proto/localisation.proto";
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package localisation;
-option go_package="./generic/localisationpb";
+option go_package="verretech-microservices/generic/localisationpb";
 
 message Localisation {
     string adresse = 2;
