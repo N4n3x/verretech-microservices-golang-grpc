@@ -31,7 +31,7 @@ stages:
 compile:
   stage: build
   script:
-    - go build ./produit
+    - go build -i -v gitlab.com/alex.hern.dev/verretech-microservices
   artifacts:
     paths:
       - mybinary
