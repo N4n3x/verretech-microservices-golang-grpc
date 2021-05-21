@@ -31,7 +31,7 @@ stages:
 compile:
   stage: build
   script:
-    - go build .
+    - go build ./produit
   artifacts:
     paths:
       - mybinary
