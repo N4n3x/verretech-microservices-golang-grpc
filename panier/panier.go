@@ -1,10 +1,10 @@
 package main
 
 import (
-	"../produit/produitpb"
 	"context"
 	"fmt"
 	"log"
+	"verretech-microservices/produit/produitpb"
 
 	"google.golang.org/grpc"
 )

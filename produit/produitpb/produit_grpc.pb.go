@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // ServiceProduitClient is the client API for ServiceProduit service.
@@ -104,7 +105,7 @@ type UnsafeServiceProduitServer interface {
 }
 
 func RegisterServiceProduitServer(s grpc.ServiceRegistrar, srv ServiceProduitServer) {
-	s.RegisterService(&_ServiceProduit_serviceDesc, srv)
+	s.RegisterService(&ServiceProduit_ServiceDesc, srv)
 }
 
 func _ServiceProduit_AddProduit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -179,7 +180,10 @@ func _ServiceProduit_GetProduitByRef_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-var _ServiceProduit_serviceDesc = grpc.ServiceDesc{
+// ServiceProduit_ServiceDesc is the grpc.ServiceDesc for ServiceProduit service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ServiceProduit_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "produit.ServiceProduit",
 	HandlerType: (*ServiceProduitServer)(nil),
 	Methods: []grpc.MethodDesc{

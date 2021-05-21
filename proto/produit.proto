@@ -1,3 +1,4 @@
+// protoc --go_out=. --go-grpc_out=. ./proto/produit.proto 
 syntax = "proto3";
 
 package produit;
@@ -26,11 +27,12 @@ message Photo {
 message Produit {
     string ID = 1;
     string ref = 2;
-    string description = 3;
-    float prix = 4;
-    repeated Photo photos = 5;
-    repeated Stock stocks = 6;
-    repeated string tags = 7;
+    string nom = 3;
+    string description = 4;
+    float prix = 5;
+    repeated Photo photos = 6;
+    repeated Stock stocks = 7;
+    repeated string tags = 8;
 }
 
 message ListProduits {
