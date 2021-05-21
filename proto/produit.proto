@@ -3,20 +3,21 @@ syntax = "proto3";
 
 package produit;
 option go_package="verretech-microservices/produit/produitpb";
+import "proto/pointRetrait.proto";
 
-message Localisation {
-    string adresse = 2;
-    string ville = 3;
-    string cp = 4;
-}
+// message Localisation {
+//     string adresse = 2;
+//     string ville = 3;
+//     string cp = 4;
+// }
 
-message PointRetrait {
-    string nom = 1;
-    Localisation localisation = 2;
-}
+// message PointRetrait {
+//     string nom = 1;
+//     Localisation localisation = 2;
+// }
 
 message Stock {
-    PointRetrait pointRetrait = 1;
+    pointRetrait.PointRetrait pointRetrait = 1;
     int32 qte = 2;
 }
 
