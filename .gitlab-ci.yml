@@ -3,8 +3,8 @@ image: golang:latest
 
 variables:
   # Please edit to your GitLab project
-  REPO_NAME: gitlab.com/alex.hern.dev/verretech-microservices
-  
+  REPO_NAME: gitlab.com/alex.hern.dev/verretech-microservices/produit
+
 # The problem is that to be able to use go get, one needs to put
 # the repository in the $GOPATH. So for example if your gitlab domain
 # is gitlab.com, and that your repository is namespace/project, and
