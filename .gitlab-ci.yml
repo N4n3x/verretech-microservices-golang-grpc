@@ -4,7 +4,7 @@ image: golang:latest
 variables:
   # Please edit to your GitLab project
   REPO_NAME: gitlab.com/alex.hern.dev/verretech-microservices
-  
+
 # The problem is that to be able to use go get, one needs to put
 # the repository in the $GOPATH. So for example if your gitlab domain
 # is gitlab.com, and that your repository is namespace/project, and
@@ -15,11 +15,10 @@ before_script:
   - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
   - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
   - cd $GOPATH/src/$REPO_NAME
+  - pwd
 
 stages:
-  - test
   - build
-  - deploy
 
 #format:
 # stage: test
@@ -31,7 +30,7 @@ stages:
 compile:
   stage: build
   script:
-    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/mybinary
+    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/mybinary ./produit
   artifacts:
     paths:
       - mybinary
