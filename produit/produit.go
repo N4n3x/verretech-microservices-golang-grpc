@@ -19,16 +19,29 @@ type server struct {
 	produitpb.UnimplementedServiceProduitServer
 }
 
-func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.Produit, error) {
+func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
 	mongoProduit, _ := documents.FromProduitPB(req.Produit)
-	fmt.Printf("Mongo produit %+v\n", mongoProduit)
+	// fmt.Printf("Mongo produit %+v\n", mongoProduit)
 	oid, err := mongoProduit.InsertOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
 	mongoProduit.ID = oid
+	var response produitpb.ProduitResponse
+	response.Produit = mongoProduit.ToProduitPB()
+	return &response, nil
+}
 
-	return mongoProduit.ToProduitPB(), nil
+func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
+	mongoProduit, _ := documents.FromProduitPB(req.Produit)
+	// fmt.Printf("Mongo produit %+v\n", mongoProduit)
+	_, err := mongoProduit.Update(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var response produitpb.ProduitResponse
+	response.Produit = mongoProduit.ToProduitPB()
+	return &response, nil
 }
 
 func main() {

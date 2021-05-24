@@ -5,17 +5,6 @@ package produit;
 option go_package="verretech-microservices/produit/produitpb";
 import "proto/pointRetrait.proto";
 
-// message Localisation {
-//     string adresse = 2;
-//     string ville = 3;
-//     string cp = 4;
-// }
-
-// message PointRetrait {
-//     string nom = 1;
-//     Localisation localisation = 2;
-// }
-
 message Stock {
     pointRetrait.PointRetrait pointRetrait = 1;
     int32 qte = 2;
@@ -50,6 +39,10 @@ message ProduitRequest {
 
 message GetAllProduitsRequest {}
 
+message ProduitByRefRequest {
+    string ref = 1;
+}
+
 message ProduitResponse {
     Produit produit = 1;
 }
@@ -58,9 +51,14 @@ message ProduitsResponse {
     ListProduits listproduits = 1;
 }
 
+message BoolResponse {
+    bool state = 1;
+}
+
 service ServiceProduit {
-    rpc AddProduit (ProduitRequest) returns (Produit);
-    rpc UpdateProduits (ProduitsRequest) returns (ProduitsResponse);
+    rpc AddProduit (ProduitRequest) returns (ProduitResponse);
+    rpc UpdateProduit (ProduitRequest) returns (ProduitResponse);
     rpc GetAllProduits (GetAllProduitsRequest) returns (ProduitsResponse);
-    rpc GetProduitByRef(GetAllProduitsRequest) returns (Produit);
+    rpc GetProduitByRef(ProduitByRefRequest) returns (ProduitResponse);
+    rpc DeleteProduit(ProduitByRefRequest) returns (BoolResponse);
 }

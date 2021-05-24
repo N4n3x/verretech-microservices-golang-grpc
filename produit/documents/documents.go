@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"verretech-microservices/generic/localisationpb"
+	"verretech-microservices/generic/pointRetraitpb"
 	"verretech-microservices/produit/produitpb"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,9 +13,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//produitCollection is the name of the collection storing our blog documents within the mongo database
+// Nom de la collection
 const produitCollection = "produit"
 
+///
+/// Définition d'un Produit
+///
 type Localisation struct {
 	Adresse string `bson:"adresse"`
 	Ville   string `bson:"ville"`
@@ -37,6 +42,7 @@ type Photo struct {
 type Produit struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Ref         string             `bson:"ref"`
+	Nom         string             `bson:"nom"`
 	Description string             `bson:"description"`
 	Prix        float32            `bson:"prix"`
 	Photos      []*Photo           `bson:"photos"`
@@ -44,7 +50,8 @@ type Produit struct {
 	Tags        []string           `bson:"tags"`
 }
 
-//InsertOne inserts one post in the database
+// InsertOne Insert un produit en base de données
+// Retourne ObjectID du produit si l'insertion se passe bien, ou une erreur
 func (produit *Produit) InsertOne(db mongo.Database) (primitive.ObjectID, error) {
 	fmt.Printf("befor insert %+v\n", produit)
 	collection := db.Collection(produitCollection)
@@ -56,7 +63,7 @@ func (produit *Produit) InsertOne(db mongo.Database) (primitive.ObjectID, error)
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-//FindOne returns the product with the specified ID from the database
+// FindOne  un Produit à partir de ça propriété Ref, ou
 func (produit *Produit) FindOne(db mongo.Database) error {
 	collection := db.Collection(produitCollection)
 	filter := bson.M{"ref": produit.Ref}
@@ -76,23 +83,23 @@ func Find(db mongo.Database) (*mongo.Cursor, error) {
 }
 
 //Update updates the specified produit within the database
-func (produit *Produit) Update(db mongo.Database) error {
+func (produit *Produit) Update(db mongo.Database) (int, error) {
 	collection := db.Collection(produitCollection)
-	update := bson.M{
-		"$set": bson.M{
-			"ref":         produit.Ref,
-			"description": produit.Description,
-			"prix":        produit.Prix,
-			"photos":      produit.Photos,
-			"stocks":      produit.Stocks,
-			"tags":        produit.Tags,
-		},
-	}
-	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update)
+	// update := bson.M{
+	// 	"$set": bson.M{
+	// 		"ref":         produit.Ref,
+	// 		"description": produit.Description,
+	// 		"prix":        produit.Prix,
+	// 		"photos":      produit.Photos,
+	// 		"stocks":      produit.Stocks,
+	// 		"tags":        produit.Tags,
+	// 	},
+	// }
+	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, produit)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return int(res.ModifiedCount), nil
 }
 
 //FromProduitPB parses a produit defined by the protobuff into a mongo produit document
@@ -123,19 +130,12 @@ func FromProduitPB(produitProto *produitpb.Produit) (*Produit, error) {
 	produit.Stocks = stocks
 
 	produit.Ref = produitProto.Ref
+	produit.Nom = produitProto.Nom
 	produit.Description = produitProto.Description
 	produit.Prix = produitProto.Prix
 	produit.Tags = produitProto.Tags
-	// produit := &Produit{
-	// 	Ref: 			produitProto.Ref,
-	// 	Description: 	produitProto.Description,
-	// 	Prix: 			produitProto.Prix,
-	// 	Photos: 		photos,
-	// 	Stocks: 		stocks,
-	// 	Tags: 			produitProto.Tags,
-	// }
 
-	fmt.Printf("End convert %+v\n", produit)
+	// fmt.Printf("End convert %+v\n", produit)
 	return produit, nil
 }
 
@@ -149,8 +149,8 @@ func (produit *Produit) ToProduitPB() *produitpb.Produit {
 
 	var stocks []*produitpb.Stock
 	for _, e := range produit.Stocks {
-		l := &produitpb.Localisation{Adresse: e.PointRetrait.Localisation.Adresse, Ville: e.PointRetrait.Localisation.Ville, Cp: e.PointRetrait.Localisation.Cp}
-		pr := &produitpb.PointRetrait{Nom: e.PointRetrait.Nom, Localisation: l}
+		l := &localisationpb.Localisation{Adresse: e.PointRetrait.Localisation.Adresse, Ville: e.PointRetrait.Localisation.Ville, Cp: e.PointRetrait.Localisation.Cp}
+		pr := &pointRetraitpb.PointRetrait{Nom: e.PointRetrait.Nom, Localisation: l}
 		s := &produitpb.Stock{PointRetrait: pr, Qte: e.Qte}
 		stocks = append(stocks, s)
 	}
@@ -158,6 +158,7 @@ func (produit *Produit) ToProduitPB() *produitpb.Produit {
 	return &produitpb.Produit{
 		ID:          produit.ID.Hex(),
 		Ref:         produit.Ref,
+		Nom:         produit.Nom,
 		Description: produit.Description,
 		Prix:        produit.Prix,
 		Photos:      photos,
