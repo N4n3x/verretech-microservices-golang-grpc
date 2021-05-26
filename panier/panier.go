@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"verretech-microservices/generic/localisationpb"
+	"verretech-microservices/generic/pointRetraitpb"
 	"verretech-microservices/produit/produitpb"
 
 	"google.golang.org/grpc"
@@ -21,20 +23,20 @@ func main() {
 	var p []*produitpb.Photo
 	p = append(p, p1, p2)
 
-	l1 := &produitpb.Localisation{Adresse: "1 rue du pont", Ville: "ROUEN", Cp: "76000"}
-	l2 := &produitpb.Localisation{Adresse: "24 rue Victor Hugo", Ville: "ROUEN", Cp: "76000"}
-	pr1 := &produitpb.PointRetrait{Nom: "PONT 1", Localisation: l1}
-	pr2 := &produitpb.PointRetrait{Nom: "HUGO 24", Localisation: l2}
+	l1 := &localisationpb.Localisation{Adresse: "1 rue du pont", Ville: "ROUEN", Cp: "76000"}
+	l2 := &localisationpb.Localisation{Adresse: "24 rue Victor Hugo", Ville: "ROUEN", Cp: "76000"}
+	pr1 := &pointRetraitpb.PointRetrait{Nom: "PONT 1", Localisation: l1}
+	pr2 := &pointRetraitpb.PointRetrait{Nom: "HUGO 24", Localisation: l2}
 	s1 := &produitpb.Stock{PointRetrait: pr1, Qte: 10}
 	s2 := &produitpb.Stock{PointRetrait: pr2, Qte: 5}
 	var s []*produitpb.Stock
 	s = append(s, s1, s2)
 
 	produit := &produitpb.Produit{
-		ID:          "",
-		Ref:         "AB1234",
+		ID:          "60ae9c57a04348bbf1d50ded",
+		Ref:         "Z99999",
 		Description: "Un super produit !",
-		Prix:        10.99,
+		Prix:        18.99,
 		Photos:      p,
 		Stocks:      s,
 		Tags:        []string{"mat:verre", "cat:sdb"},
@@ -42,7 +44,7 @@ func main() {
 
 	produitRequest := &produitpb.ProduitRequest{Produit: produit}
 
-	res, err := produitClient.AddProduit(context.Background(), produitRequest)
+	res, err := produitClient.UpdateProduit(context.Background(), produitRequest)
 	if err != nil {
 		log.Fatalf("Unable to create Product: %v", err)
 	}

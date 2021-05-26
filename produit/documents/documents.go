@@ -2,7 +2,6 @@ package documents
 
 import (
 	"context"
-	"fmt"
 
 	"verretech-microservices/generic/localisationpb"
 	"verretech-microservices/generic/pointRetraitpb"
@@ -53,7 +52,7 @@ type Produit struct {
 // InsertOne Insert un produit en base de données
 // Retourne ObjectID du produit si l'insertion se passe bien, ou une erreur
 func (produit *Produit) InsertOne(db mongo.Database) (primitive.ObjectID, error) {
-	fmt.Printf("befor insert %+v\n", produit)
+	// fmt.Printf("befor insert %+v\n", produit)
 	collection := db.Collection(produitCollection)
 	result, err := collection.InsertOne(context.Background(), produit)
 	if err != nil {
@@ -85,17 +84,19 @@ func Find(db mongo.Database) (*mongo.Cursor, error) {
 //Update updates the specified produit within the database
 func (produit *Produit) Update(db mongo.Database) (int, error) {
 	collection := db.Collection(produitCollection)
-	// update := bson.M{
-	// 	"$set": bson.M{
-	// 		"ref":         produit.Ref,
-	// 		"description": produit.Description,
-	// 		"prix":        produit.Prix,
-	// 		"photos":      produit.Photos,
-	// 		"stocks":      produit.Stocks,
-	// 		"tags":        produit.Tags,
-	// 	},
-	// }
-	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, produit)
+	update := bson.M{
+		"$set": bson.M{
+			"ref":         produit.Ref,
+			"nom":         produit.Nom,
+			"description": produit.Description,
+			"prix":        produit.Prix,
+			"photos":      produit.Photos,
+			"stocks":      produit.Stocks,
+			"tags":        produit.Tags,
+		},
+	}
+	// fmt.Printf("Mongo produit %+v\n", produit.ID.String())
+	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update)
 	if err != nil {
 		return 0, err
 	}
@@ -104,7 +105,7 @@ func (produit *Produit) Update(db mongo.Database) (int, error) {
 
 //FromProduitPB parses a produit defined by the protobuff into a mongo produit document
 func FromProduitPB(produitProto *produitpb.Produit) (*Produit, error) {
-	fmt.Printf("%+v\n", produitProto)
+	// fmt.Printf("%+v\n", produitProto)
 	var produit = new(Produit)
 	var photos []*Photo
 	var stocks []*Stock

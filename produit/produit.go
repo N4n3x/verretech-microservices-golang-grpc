@@ -34,7 +34,7 @@ func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequ
 
 func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
 	mongoProduit, _ := documents.FromProduitPB(req.Produit)
-	// fmt.Printf("Mongo produit %+v\n", mongoProduit)
+
 	_, err := mongoProduit.Update(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
