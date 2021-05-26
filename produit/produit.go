@@ -33,7 +33,6 @@ func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequ
 }
 
 func (server *server) GetAllProduits(ctx context.Context, req *produitpb.GetAllProduitsRequest) (*produitpb.ProduitsResponse, error) {
-
 	p, err := documents.Find(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
@@ -49,6 +48,18 @@ func (server *server) GetAllProduits(ctx context.Context, req *produitpb.GetAllP
 	var final produitpb.ProduitsResponse
 	final.Listproduits = &response
 	return &final, nil
+}
+
+func (server *server) GetProduitByRef(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.ProduitResponse, error) {
+	var produit documents.Produit
+	produit.Ref = req.Ref
+	err := produit.FindOne(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var response produitpb.ProduitResponse
+	response.Produit = produit.ToProduitPB()
+	return &response, nil
 }
 
 func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
