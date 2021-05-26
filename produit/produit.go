@@ -32,6 +32,25 @@ func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequ
 	return &response, nil
 }
 
+func (server *server) GetAllProduits(ctx context.Context, req *produitpb.GetAllProduitsRequest) (*produitpb.ProduitsResponse, error) {
+
+	p, err := documents.Find(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var produits []documents.Produit
+	if err = p.All(ctx, &produits); err != nil {
+		log.Fatal(err)
+	}
+	var response produitpb.ListProduits
+	for _, pr := range produits {
+		response.Produits = append(response.Produits, pr.ToProduitPB())
+	}
+	var final produitpb.ProduitsResponse
+	final.Listproduits = &response
+	return &final, nil
+}
+
 func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
 	mongoProduit, _ := documents.FromProduitPB(req.Produit)
 

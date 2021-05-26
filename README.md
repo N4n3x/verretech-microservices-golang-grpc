@@ -7,7 +7,8 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Connexion à la base de données
 * 🛠 Conception des fonctions métiers
   * ✅ Create
-  * 🛠 Read
+  * ✅ ReadAll
+  * 🛠 ReadByID
   * ✅ Update
   * 🛠 Delete
 ### Utilisateur
