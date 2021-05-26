@@ -74,6 +74,19 @@ func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitR
 	return &response, nil
 }
 
+func (server *server) DeleteProduit(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.BoolResponse, error) {
+	var produit documents.Produit
+	produit.Ref = req.Ref
+
+	_, err := produit.Delete(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var response produitpb.BoolResponse
+	response.State = true
+	return &response, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {

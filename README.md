@@ -5,12 +5,12 @@ Architecture micro services en GO pour site e-Commerce
 ### Produit
 * ✅ Création interface GRPC
 * ✅ Connexion à la base de données
-* 🛠 Conception des fonctions métiers
+* ✅ Conception des fonctions métiers
   * ✅ Create
   * ✅ ReadAll
   * ✅ ReadByID
   * ✅ Update
-  * 🛠 Delete
+  * ✅ Delete
 ### Utilisateur
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données

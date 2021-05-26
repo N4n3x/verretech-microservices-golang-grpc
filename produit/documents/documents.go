@@ -103,6 +103,15 @@ func (produit *Produit) Update(db mongo.Database) (int, error) {
 	return int(res.ModifiedCount), nil
 }
 
+func (produit *Produit) Delete(db mongo.Database) (int, error) {
+	collection := db.Collection(produitCollection)
+	res, err := collection.DeleteOne(context.Background(), bson.M{"ref": produit.Ref})
+	if err != nil {
+		return 0, err
+	}
+	return int(res.DeletedCount), nil
+}
+
 //FromProduitPB parses a produit defined by the protobuff into a mongo produit document
 func FromProduitPB(produitProto *produitpb.Produit) (*Produit, error) {
 	// fmt.Printf("%+v\n", produitProto)

@@ -45,7 +45,8 @@ func main() {
 	b := &produitpb.ProduitByRefRequest{Ref: "Z99999"}
 	// res, err := produitClient.UpdateProduit(context.Background(), produitRequest)
 	// res, err := produitClient.GetAllProduits(context.Background(), b)
-	res, err := produitClient.GetProduitByRef(context.Background(), b)
+	// res, err := produitClient.GetProduitByRef(context.Background(), b)
+	res, err := produitClient.DeleteProduit(context.Background(), b)
 	if err != nil {
 		log.Fatalf("Unable to create Product: %v", err)
 	}
