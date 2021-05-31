@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"verretech-microservices/produit/documents"
@@ -40,7 +39,23 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["ref"]
 
-	fmt.Fprintf(w, "Key: "+key)
+	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Unable to connect to server : %v", err)
+	}
+	produitClient := produitpb.NewServiceProduitClient(cc)
+	b := &produitpb.ProduitByRefRequest{
+		Ref: key,
+	}
+	res, err := produitClient.GetProduitByRef(context.Background(), b)
+	if err != nil {
+		log.Fatalf("Unable to get Products: %v", err)
+	}
+	produit, perr := documents.FromProduitPB(res.Produit)
+	if perr != nil {
+		log.Fatalf("Unable to get Products: %v", err)
+	}
+	json.NewEncoder(w).Encode(produit)
 }
 
 func handleRequests() {

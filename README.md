@@ -24,10 +24,10 @@ Architecture micro services en GO pour site e-Commerce
 * ⏳ Connexion à la base de données
 * ⏳ Conception des fonctions métiers
 ### Gateway
-* ⏳ Référencement des routes
+* 🛠 Référencement des routes
 * ⏳ Conception middleware Auth
 * ⏳ Conception middleware Log
-* ⏳ Mise en place du routage
+* 🛠 Mise en place du routage
 ### ERP
 * ⏳ Création connecteur ERP
 * ⏳ Conseption taches récurentes
