@@ -29,7 +29,8 @@ Architecture micro services en GO pour site e-Commerce
 * ⏳ Conception middleware Log
 * 🛠 Mise en place du routage
 ### ERP
-* ⏳ Création connecteur ERP
+* ✅ Création connecteur ERP
+* ✅ Mise à jour Service Produit
 * ⏳ Conseption taches récurentes
 
 ### Endpoints Gateway
