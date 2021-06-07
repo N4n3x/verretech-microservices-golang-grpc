@@ -2,6 +2,7 @@ package documents_erp
 
 import (
 	"context"
+	"fmt"
 
 	"verretech-microservices/generic/localisationpb"
 	"verretech-microservices/generic/pointRetraitpb"
@@ -47,6 +48,29 @@ type Produit struct {
 	Photos      []*Photo           `bson:"photos"`
 	Stocks      []*Stock           `bson:"stocks"`
 	Tags        []string           `bson:"tags"`
+}
+
+type ProduitErp struct {
+	Ref         string   `json:"Ref"`
+	Nom         string   `json:"Nom"`
+	Description string   `json:"Description"`
+	Prix        float32  `json:"Prix"`
+	Urls        []string `json:"Url (from Photos)"`
+	QteStock    []int32  `json:"Qte (from Stock)"`
+	NomPdR      []string `json:"Nom (from PointRetrait) (from Stock)"`
+	AdrLoca     []string `json:"Adresse (from Localisation) (from PointRetrait) (from Stock)"`
+	VilleLoca   []string `json:"Ville (from Localisation) (from PointRetrait) (from Stock)"`
+	CpLoca      []string `json:"Cp (from Localisation) (from PointRetrait) (from Stock)"`
+	Tags        []string `json:"Tags"`
+}
+
+type BodyErp struct {
+	Id     string      `json:"id"`
+	Fields *ProduitErp `json:"fields"`
+}
+
+type RepErp struct {
+	Records []*BodyErp `json:"records"`
 }
 
 // InsertOne Insert un produit en base de données
@@ -95,7 +119,6 @@ func (produit *Produit) Update(db mongo.Database) (int, error) {
 			"tags":        produit.Tags,
 		},
 	}
-	// fmt.Printf("Mongo produit %+v\n", produit.ID.String())
 	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update)
 	if err != nil {
 		return 0, err
@@ -175,4 +198,44 @@ func (produit *Produit) ToProduitPB() *produitpb.Produit {
 		Stocks:      stocks,
 		Tags:        produit.Tags,
 	}
+}
+
+func (body *ProduitErp) ToProduitPB() *produitpb.Produit {
+	produit := &produitpb.Produit{
+		Ref:         body.Ref,
+		Nom:         body.Nom,
+		Description: body.Description,
+		Prix:        body.Prix,
+		Tags:        body.Tags,
+	}
+	for _, url := range body.Urls {
+		photo := &produitpb.Photo{Url: url}
+		// fmt.Printf("%+v\n", photo)
+		produit.Photos = append(produit.Photos, photo)
+	}
+	for i, qte := range body.QteStock {
+		// var stock *produitpb.Stock
+		// var pdr *pointRetraitpb.PointRetrait
+		// var localisation *localisationpb.Localisation
+
+		localisation := &localisationpb.Localisation{
+			Adresse: body.AdrLoca[i],
+			Cp:      body.CpLoca[i],
+			Ville:   body.VilleLoca[i],
+		}
+
+		pdr := &pointRetraitpb.PointRetrait{
+			Localisation: localisation,
+			Nom:          body.NomPdR[i],
+		}
+
+		stock := &produitpb.Stock{
+			PointRetrait: pdr,
+			Qte:          qte,
+		}
+
+		produit.Stocks = append(produit.Stocks, stock)
+	}
+	fmt.Printf("%+v\n", produit)
+	return produit
 }

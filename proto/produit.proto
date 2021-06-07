@@ -30,7 +30,7 @@ message ListProduits {
 }
 
 message ProduitsRequest {
-    ListProduits listproduits = 1;
+    repeated Produit produits = 1;
 }
 
 message ProduitRequest {
@@ -58,6 +58,7 @@ message BoolResponse {
 service ServiceProduit {
     rpc AddProduit (ProduitRequest) returns (ProduitResponse);
     rpc UpdateProduit (ProduitRequest) returns (ProduitResponse);
+    rpc UpdateProduits (ProduitsRequest) returns (BoolResponse);
     rpc GetAllProduits (GetAllProduitsRequest) returns (ProduitsResponse);
     rpc GetProduitByRef(ProduitByRefRequest) returns (ProduitResponse);
     rpc DeleteProduit(ProduitByRefRequest) returns (BoolResponse);

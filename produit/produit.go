@@ -74,6 +74,27 @@ func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitR
 	return &response, nil
 }
 
+func (server *server) UpdateProduits(ctx context.Context, req *produitpb.ProduitsRequest) (*produitpb.BoolResponse, error) {
+	var p []*documents.Produit
+	for _, e := range req.Produits {
+		mongoProduit, _ := documents.FromProduitPB(e)
+		fmt.Printf("ça c'est e: %+v\n", e)
+		fmt.Printf("ça c'est mongo: %+v\n", mongoProduit)
+		p = append(p, mongoProduit)
+	}
+
+	_, err := documents.UpdateAll(*server.db.Database, p)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+
+	response := &produitpb.BoolResponse{
+		State: true,
+	}
+
+	return response, nil
+}
+
 func (server *server) DeleteProduit(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.BoolResponse, error) {
 	var produit documents.Produit
 	produit.Ref = req.Ref

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceProduitClient interface {
 	AddProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*ProduitResponse, error)
 	UpdateProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*ProduitResponse, error)
+	UpdateProduits(ctx context.Context, in *ProduitsRequest, opts ...grpc.CallOption) (*BoolResponse, error)
 	GetAllProduits(ctx context.Context, in *GetAllProduitsRequest, opts ...grpc.CallOption) (*ProduitsResponse, error)
 	GetProduitByRef(ctx context.Context, in *ProduitByRefRequest, opts ...grpc.CallOption) (*ProduitResponse, error)
 	DeleteProduit(ctx context.Context, in *ProduitByRefRequest, opts ...grpc.CallOption) (*BoolResponse, error)
@@ -45,6 +46,15 @@ func (c *serviceProduitClient) AddProduit(ctx context.Context, in *ProduitReques
 func (c *serviceProduitClient) UpdateProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*ProduitResponse, error) {
 	out := new(ProduitResponse)
 	err := c.cc.Invoke(ctx, "/produit.ServiceProduit/UpdateProduit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceProduitClient) UpdateProduits(ctx context.Context, in *ProduitsRequest, opts ...grpc.CallOption) (*BoolResponse, error) {
+	out := new(BoolResponse)
+	err := c.cc.Invoke(ctx, "/produit.ServiceProduit/UpdateProduits", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +94,7 @@ func (c *serviceProduitClient) DeleteProduit(ctx context.Context, in *ProduitByR
 type ServiceProduitServer interface {
 	AddProduit(context.Context, *ProduitRequest) (*ProduitResponse, error)
 	UpdateProduit(context.Context, *ProduitRequest) (*ProduitResponse, error)
+	UpdateProduits(context.Context, *ProduitsRequest) (*BoolResponse, error)
 	GetAllProduits(context.Context, *GetAllProduitsRequest) (*ProduitsResponse, error)
 	GetProduitByRef(context.Context, *ProduitByRefRequest) (*ProduitResponse, error)
 	DeleteProduit(context.Context, *ProduitByRefRequest) (*BoolResponse, error)
@@ -99,6 +110,9 @@ func (UnimplementedServiceProduitServer) AddProduit(context.Context, *ProduitReq
 }
 func (UnimplementedServiceProduitServer) UpdateProduit(context.Context, *ProduitRequest) (*ProduitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProduit not implemented")
+}
+func (UnimplementedServiceProduitServer) UpdateProduits(context.Context, *ProduitsRequest) (*BoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProduits not implemented")
 }
 func (UnimplementedServiceProduitServer) GetAllProduits(context.Context, *GetAllProduitsRequest) (*ProduitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllProduits not implemented")
@@ -154,6 +168,24 @@ func _ServiceProduit_UpdateProduit_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ServiceProduitServer).UpdateProduit(ctx, req.(*ProduitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServiceProduit_UpdateProduits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProduitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceProduitServer).UpdateProduits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/produit.ServiceProduit/UpdateProduits",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceProduitServer).UpdateProduits(ctx, req.(*ProduitsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -226,6 +258,10 @@ var ServiceProduit_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateProduit",
 			Handler:    _ServiceProduit_UpdateProduit_Handler,
+		},
+		{
+			MethodName: "UpdateProduits",
+			Handler:    _ServiceProduit_UpdateProduits_Handler,
 		},
 		{
 			MethodName: "GetAllProduits",

@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Nom de la collection
@@ -83,6 +84,7 @@ func Find(db mongo.Database) (*mongo.Cursor, error) {
 
 //Update updates the specified produit within the database
 func (produit *Produit) Update(db mongo.Database) (int, error) {
+	opts := options.Update().SetUpsert(true)
 	collection := db.Collection(produitCollection)
 	update := bson.M{
 		"$set": bson.M{
@@ -95,12 +97,34 @@ func (produit *Produit) Update(db mongo.Database) (int, error) {
 			"tags":        produit.Tags,
 		},
 	}
-	// fmt.Printf("Mongo produit %+v\n", produit.ID.String())
-	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update)
+	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": produit.ID}, update, opts)
 	if err != nil {
 		return 0, err
 	}
 	return int(res.ModifiedCount), nil
+}
+
+//Update updates the specified produit within the database
+func UpdateAll(db mongo.Database, produits []*Produit) (int, error) {
+	collection := db.Collection(produitCollection)
+	collection.DeleteMany(context.Background(), bson.M{})
+	p := []interface{}{}
+	for _, produit := range produits {
+		p = append(p, bson.M{
+			"ref":         produit.Ref,
+			"nom":         produit.Nom,
+			"description": produit.Description,
+			"prix":        produit.Prix,
+			"photos":      produit.Photos,
+			"stocks":      produit.Stocks,
+			"tags":        produit.Tags,
+		})
+	}
+	res, err := collection.InsertMany(context.Background(), p)
+	if err != nil {
+		return 0, err
+	}
+	return len(res.InsertedIDs), nil
 }
 
 func (produit *Produit) Delete(db mongo.Database) (int, error) {
