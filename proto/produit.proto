@@ -43,6 +43,10 @@ message ProduitByRefRequest {
     string ref = 1;
 }
 
+message ProduitsByTags {
+    repeated string tags = 1;
+}
+
 message ProduitResponse {
     Produit produit = 1;
 }
@@ -60,6 +64,7 @@ service ServiceProduit {
     rpc UpdateProduit (ProduitRequest) returns (ProduitResponse);
     rpc UpdateProduits (ProduitsRequest) returns (BoolResponse);
     rpc GetAllProduits (GetAllProduitsRequest) returns (ProduitsResponse);
+    rpc GetProduitsByTags (ProduitsByTags) returns (ProduitsResponse);
     rpc GetProduitByRef(ProduitByRefRequest) returns (ProduitResponse);
     rpc DeleteProduit(ProduitByRefRequest) returns (BoolResponse);
 }

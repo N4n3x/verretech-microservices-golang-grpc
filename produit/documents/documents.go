@@ -82,6 +82,12 @@ func Find(db mongo.Database) (*mongo.Cursor, error) {
 	return collection.Find(context.Background(), bson.D{{}})
 }
 
+//Find returns a cursor pointin to all the produits in the db
+func FindByTags(db mongo.Database, tags primitive.M) (*mongo.Cursor, error) {
+	collection := db.Collection(produitCollection)
+	return collection.Find(context.Background(), tags)
+}
+
 //Update updates the specified produit within the database
 func (produit *Produit) Update(db mongo.Database) (int, error) {
 	opts := options.Update().SetUpsert(true)

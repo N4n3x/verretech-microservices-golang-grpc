@@ -9,6 +9,7 @@ import (
 	"verretech-microservices/produit/documents"
 	"verretech-microservices/produit/produitpb"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,6 +35,34 @@ func (server *server) AddProduit(ctx context.Context, req *produitpb.ProduitRequ
 
 func (server *server) GetAllProduits(ctx context.Context, req *produitpb.GetAllProduitsRequest) (*produitpb.ProduitsResponse, error) {
 	p, err := documents.Find(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var produits []documents.Produit
+	if err = p.All(ctx, &produits); err != nil {
+		log.Fatal(err)
+	}
+	var response produitpb.ListProduits
+	for _, pr := range produits {
+		response.Produits = append(response.Produits, pr.ToProduitPB())
+	}
+	var final produitpb.ProduitsResponse
+	final.Listproduits = &response
+	return &final, nil
+}
+
+func (server *server) GetProduitsByTags(ctx context.Context, req *produitpb.ProduitsByTags) (*produitpb.ProduitsResponse, error) {
+	fmt.Printf("%+v\n", req.Tags)
+	t := []string{}
+	for _, v := range req.Tags {
+		t = append(t, v)
+	}
+
+	fmt.Printf("%+v\n", t)
+	query := bson.M{
+		"tags": bson.M{"$all": t},
+	}
+	p, err := documents.FindByTags(*server.db.Database, query)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
@@ -78,8 +107,6 @@ func (server *server) UpdateProduits(ctx context.Context, req *produitpb.Produit
 	var p []*documents.Produit
 	for _, e := range req.Produits {
 		mongoProduit, _ := documents.FromProduitPB(e)
-		fmt.Printf("ça c'est e: %+v\n", e)
-		fmt.Printf("ça c'est mongo: %+v\n", mongoProduit)
 		p = append(p, mongoProduit)
 	}
 
@@ -98,7 +125,6 @@ func (server *server) UpdateProduits(ctx context.Context, req *produitpb.Produit
 func (server *server) DeleteProduit(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.BoolResponse, error) {
 	var produit documents.Produit
 	produit.Ref = req.Ref
-
 	_, err := produit.Delete(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))

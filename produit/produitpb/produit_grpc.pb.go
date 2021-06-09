@@ -22,6 +22,7 @@ type ServiceProduitClient interface {
 	UpdateProduit(ctx context.Context, in *ProduitRequest, opts ...grpc.CallOption) (*ProduitResponse, error)
 	UpdateProduits(ctx context.Context, in *ProduitsRequest, opts ...grpc.CallOption) (*BoolResponse, error)
 	GetAllProduits(ctx context.Context, in *GetAllProduitsRequest, opts ...grpc.CallOption) (*ProduitsResponse, error)
+	GetProduitsByTags(ctx context.Context, in *ProduitsByTags, opts ...grpc.CallOption) (*ProduitsResponse, error)
 	GetProduitByRef(ctx context.Context, in *ProduitByRefRequest, opts ...grpc.CallOption) (*ProduitResponse, error)
 	DeleteProduit(ctx context.Context, in *ProduitByRefRequest, opts ...grpc.CallOption) (*BoolResponse, error)
 }
@@ -70,6 +71,15 @@ func (c *serviceProduitClient) GetAllProduits(ctx context.Context, in *GetAllPro
 	return out, nil
 }
 
+func (c *serviceProduitClient) GetProduitsByTags(ctx context.Context, in *ProduitsByTags, opts ...grpc.CallOption) (*ProduitsResponse, error) {
+	out := new(ProduitsResponse)
+	err := c.cc.Invoke(ctx, "/produit.ServiceProduit/GetProduitsByTags", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serviceProduitClient) GetProduitByRef(ctx context.Context, in *ProduitByRefRequest, opts ...grpc.CallOption) (*ProduitResponse, error) {
 	out := new(ProduitResponse)
 	err := c.cc.Invoke(ctx, "/produit.ServiceProduit/GetProduitByRef", in, out, opts...)
@@ -96,6 +106,7 @@ type ServiceProduitServer interface {
 	UpdateProduit(context.Context, *ProduitRequest) (*ProduitResponse, error)
 	UpdateProduits(context.Context, *ProduitsRequest) (*BoolResponse, error)
 	GetAllProduits(context.Context, *GetAllProduitsRequest) (*ProduitsResponse, error)
+	GetProduitsByTags(context.Context, *ProduitsByTags) (*ProduitsResponse, error)
 	GetProduitByRef(context.Context, *ProduitByRefRequest) (*ProduitResponse, error)
 	DeleteProduit(context.Context, *ProduitByRefRequest) (*BoolResponse, error)
 	mustEmbedUnimplementedServiceProduitServer()
@@ -116,6 +127,9 @@ func (UnimplementedServiceProduitServer) UpdateProduits(context.Context, *Produi
 }
 func (UnimplementedServiceProduitServer) GetAllProduits(context.Context, *GetAllProduitsRequest) (*ProduitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllProduits not implemented")
+}
+func (UnimplementedServiceProduitServer) GetProduitsByTags(context.Context, *ProduitsByTags) (*ProduitsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProduitsByTags not implemented")
 }
 func (UnimplementedServiceProduitServer) GetProduitByRef(context.Context, *ProduitByRefRequest) (*ProduitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProduitByRef not implemented")
@@ -208,6 +222,24 @@ func _ServiceProduit_GetAllProduits_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceProduit_GetProduitsByTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProduitsByTags)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceProduitServer).GetProduitsByTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/produit.ServiceProduit/GetProduitsByTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceProduitServer).GetProduitsByTags(ctx, req.(*ProduitsByTags))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServiceProduit_GetProduitByRef_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProduitByRefRequest)
 	if err := dec(in); err != nil {
@@ -266,6 +298,10 @@ var ServiceProduit_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllProduits",
 			Handler:    _ServiceProduit_GetAllProduits_Handler,
+		},
+		{
+			MethodName: "GetProduitsByTags",
+			Handler:    _ServiceProduit_GetProduitsByTags_Handler,
 		},
 		{
 			MethodName: "GetProduitByRef",

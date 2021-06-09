@@ -10,6 +10,7 @@ Architecture micro services en GO pour site e-Commerce
   * ✅ ReadAll
   * ✅ ReadByID
   * ✅ Update
+  * ✅ UpdateAll
   * ✅ Delete
 ### Utilisateur
 * ✅ Création interface GRPC
@@ -23,37 +24,36 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données
 * ⏳ Conception des fonctions métiers
-### Gateway
-* 🛠 Référencement des routes
-* ⏳ Conception middleware Auth
-* ⏳ Conception middleware Log
-* 🛠 Mise en place du routage
 ### ERP
 * ✅ Création connecteur ERP
 * ✅ Mise à jour Service Produit
 * ⏳ Conseption taches récurentes
-
+### Gateway
+* ✅ Référencement des routes
+* ⏳ Conception middleware Auth
+* ⏳ Conception middleware Log
+* 🛠 Mise en place du routage
 ### Endpoints Gateway
 * Produit
-  * GET /produit?params=###
-  * GET /produit/ID
+  * 🛠 GET /produit?params=###
+  * 🛠 GET /produit/ID
 * Utilisateur
-  * POST /utilisateur
-  * GET /utilisateur?params=###
-  * GET /utilisateur/ID
-  * PUT /utilisateur/ID
-  * DELETE /utilisateur/ID
+  * ⏳ POST /utilisateur
+  * ⏳ GET /utilisateur?params=###
+  * ⏳ GET /utilisateur/ID
+  * ⏳ PUT /utilisateur/ID
+  * ⏳ DELETE /utilisateur/ID
 * Panier
-  * POST /panier
-  * GET /panier?params=###
-  * GET /panier/ID
-  * PUT /panier/ID
+  * ⏳ POST /panier
+  * ⏳ GET /panier?params=###
+  * ⏳ GET /panier/ID
+  * ⏳ PUT /panier/ID
 * Commande
-  * POST /commande
-  * GET /commande?params=###
-  * GET /commande/ID
+  * ⏳ POST /commande
+  * ⏳ GET /commande?params=###
+  * ⏳ GET /commande/ID
 * Indicateur
-  * GET /indicateur?params=###
+  * ⏳ GET /indicateur?params=###
 
 ### CMD
 * Générer les interfaces du protocol buffer:
