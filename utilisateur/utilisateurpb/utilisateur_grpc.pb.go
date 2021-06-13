@@ -18,8 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceUtilisateurClient interface {
+	InsertUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*BoolResponse, error)
 	UpdateUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error)
 	GetUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error)
+	GetUtilisateurs(ctx context.Context, in *UtilisateursRequest, opts ...grpc.CallOption) (*UtilisateursResponse, error)
 	Auth(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*AuthResponse, error)
 }
 
@@ -29,6 +31,15 @@ type serviceUtilisateurClient struct {
 
 func NewServiceUtilisateurClient(cc grpc.ClientConnInterface) ServiceUtilisateurClient {
 	return &serviceUtilisateurClient{cc}
+}
+
+func (c *serviceUtilisateurClient) InsertUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*BoolResponse, error) {
+	out := new(BoolResponse)
+	err := c.cc.Invoke(ctx, "/utilisateur.ServiceUtilisateur/InsertUtilisateur", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *serviceUtilisateurClient) UpdateUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error) {
@@ -49,6 +60,15 @@ func (c *serviceUtilisateurClient) GetUtilisateur(ctx context.Context, in *Utili
 	return out, nil
 }
 
+func (c *serviceUtilisateurClient) GetUtilisateurs(ctx context.Context, in *UtilisateursRequest, opts ...grpc.CallOption) (*UtilisateursResponse, error) {
+	out := new(UtilisateursResponse)
+	err := c.cc.Invoke(ctx, "/utilisateur.ServiceUtilisateur/GetUtilisateurs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *serviceUtilisateurClient) Auth(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
 	out := new(AuthResponse)
 	err := c.cc.Invoke(ctx, "/utilisateur.ServiceUtilisateur/Auth", in, out, opts...)
@@ -62,8 +82,10 @@ func (c *serviceUtilisateurClient) Auth(ctx context.Context, in *UtilisateurRequ
 // All implementations must embed UnimplementedServiceUtilisateurServer
 // for forward compatibility
 type ServiceUtilisateurServer interface {
+	InsertUtilisateur(context.Context, *UtilisateurRequest) (*BoolResponse, error)
 	UpdateUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error)
 	GetUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error)
+	GetUtilisateurs(context.Context, *UtilisateursRequest) (*UtilisateursResponse, error)
 	Auth(context.Context, *UtilisateurRequest) (*AuthResponse, error)
 	mustEmbedUnimplementedServiceUtilisateurServer()
 }
@@ -72,11 +94,17 @@ type ServiceUtilisateurServer interface {
 type UnimplementedServiceUtilisateurServer struct {
 }
 
+func (UnimplementedServiceUtilisateurServer) InsertUtilisateur(context.Context, *UtilisateurRequest) (*BoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InsertUtilisateur not implemented")
+}
 func (UnimplementedServiceUtilisateurServer) UpdateUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUtilisateur not implemented")
 }
 func (UnimplementedServiceUtilisateurServer) GetUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUtilisateur not implemented")
+}
+func (UnimplementedServiceUtilisateurServer) GetUtilisateurs(context.Context, *UtilisateursRequest) (*UtilisateursResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUtilisateurs not implemented")
 }
 func (UnimplementedServiceUtilisateurServer) Auth(context.Context, *UtilisateurRequest) (*AuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Auth not implemented")
@@ -92,6 +120,24 @@ type UnsafeServiceUtilisateurServer interface {
 
 func RegisterServiceUtilisateurServer(s grpc.ServiceRegistrar, srv ServiceUtilisateurServer) {
 	s.RegisterService(&ServiceUtilisateur_ServiceDesc, srv)
+}
+
+func _ServiceUtilisateur_InsertUtilisateur_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UtilisateurRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceUtilisateurServer).InsertUtilisateur(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/utilisateur.ServiceUtilisateur/InsertUtilisateur",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceUtilisateurServer).InsertUtilisateur(ctx, req.(*UtilisateurRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ServiceUtilisateur_UpdateUtilisateur_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -130,6 +176,24 @@ func _ServiceUtilisateur_GetUtilisateur_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ServiceUtilisateur_GetUtilisateurs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UtilisateursRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceUtilisateurServer).GetUtilisateurs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/utilisateur.ServiceUtilisateur/GetUtilisateurs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceUtilisateurServer).GetUtilisateurs(ctx, req.(*UtilisateursRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ServiceUtilisateur_Auth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UtilisateurRequest)
 	if err := dec(in); err != nil {
@@ -156,12 +220,20 @@ var ServiceUtilisateur_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceUtilisateurServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "InsertUtilisateur",
+			Handler:    _ServiceUtilisateur_InsertUtilisateur_Handler,
+		},
+		{
 			MethodName: "UpdateUtilisateur",
 			Handler:    _ServiceUtilisateur_UpdateUtilisateur_Handler,
 		},
 		{
 			MethodName: "GetUtilisateur",
 			Handler:    _ServiceUtilisateur_GetUtilisateur_Handler,
+		},
+		{
+			MethodName: "GetUtilisateurs",
+			Handler:    _ServiceUtilisateur_GetUtilisateurs_Handler,
 		},
 		{
 			MethodName: "Auth",

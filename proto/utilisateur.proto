@@ -11,20 +11,31 @@ message Preferences {
 }
 
 message Utilisateur {
-    string nom = 1;
-    string prenom = 2;
-    string mail = 3;
-    string hashMotDePasse = 4;
-    Preferences preferences = 5;
-    repeated string permission = 6;
+    string ID = 1;
+    string nom = 2;
+    string prenom = 3;
+    string mail = 4;
+    string hashMotDePasse = 5;
+    Preferences preferences = 6;
+    repeated string permission = 7;
 }
 
 message UtilisateurRequest {
     Utilisateur utilisateur = 1;
 }
 
+message UtilisateursRequest {}
+
 message UtilisateurResponse {
     Utilisateur utilisateur = 1;
+}
+
+message UtilisateursResponse {
+    repeated Utilisateur utilisateur = 1;
+}
+
+message BoolResponse {
+    bool state = 1;
 }
 
 message AuthResponse {
@@ -32,7 +43,9 @@ message AuthResponse {
 }
 
 service ServiceUtilisateur {
+    rpc InsertUtilisateur(UtilisateurRequest) returns (BoolResponse);
     rpc UpdateUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
     rpc GetUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
+    rpc GetUtilisateurs(UtilisateursRequest) returns (UtilisateursResponse);
     rpc Auth(UtilisateurRequest) returns (AuthResponse);
 }
