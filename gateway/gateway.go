@@ -75,6 +75,10 @@ func GetUtilisateurs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(utilisateurs)
 }
 
+///TODO: Update Utilisateur
+
+///TODO: Delete Utilisateur
+
 /// GetProduits
 // @return []produit
 // @param tag (tag=tag1,tag2,tag3...) permet de filtrer les résultats par tag
@@ -158,15 +162,6 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// func authMiddleware(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		// Do stuff here
-// 		log.Println(r.Header.Get("Authorization"))
-// 		// Call the next handler, which can be another middleware in the chain, or the final handler.
-// 		next.ServeHTTP(w, r)
-// 	})
-// }
-
 func createToken(w http.ResponseWriter, r *http.Request) {
 	token := uuid.New().String()
 	user, err := authenticator.Authenticate(r)
@@ -176,7 +171,6 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(code), code)
 		return
 	}
-	// user := auth.NewDefaultUser(r.UserName, r.Password, nil, nil)
 	fmt.Printf("Auth: %+v\n", r)
 
 	tokenStrategy := authenticator.Strategy(bearer.CachedStrategyKey)
