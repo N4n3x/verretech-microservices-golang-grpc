@@ -3,8 +3,6 @@ package documents
 import (
 	"context"
 
-	"verretech-microservices/generic/localisationpb"
-	"verretech-microservices/generic/pointRetraitpb"
 	"verretech-microservices/utilisateur/utilisateurpb"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -111,28 +109,29 @@ func (utilisateur *Utilisateur) Delete(db mongo.Database) (int, error) {
 //FromUtilisateurPB Instancie un Utilisateur à partir d'un Utilisateur ProtoBuf
 func FromUtilisateurPB(utilisateurProto *utilisateurpb.Utilisateur) (*Utilisateur, error) {
 	// fmt.Printf("%+v\n", utilisateurProto)
-
+	///TODO: Null safety
 	utilisateur := &Utilisateur{
 		Nom:            utilisateurProto.Nom,
 		Prenom:         utilisateurProto.Prenom,
 		Mail:           utilisateurProto.Mail,
 		HashMotDePasse: utilisateurProto.HashMotDePasse,
-		Preferences: &Preferences{
-			Localisation: &Localisation{
-				Adresse: utilisateurProto.Preferences.Localisation.Adresse,
-				Ville:   utilisateurProto.Preferences.Localisation.Ville,
-				Cp:      utilisateurProto.Preferences.Localisation.Cp,
-			},
-			PointRetrait: &PointRetrait{
-				Nom: utilisateurProto.Preferences.PointRetrait.Nom,
-				Localisation: &Localisation{
-					Adresse: utilisateurProto.Preferences.PointRetrait.Localisation.Adresse,
-					Ville:   utilisateurProto.Preferences.PointRetrait.Localisation.Ville,
-					Cp:      utilisateurProto.Preferences.PointRetrait.Localisation.Cp,
-				},
-			},
-		},
-		Permission: utilisateurProto.Permission,
+		Permission:     utilisateurProto.Permission,
+	}
+
+	if utilisateurProto.Preferences != nil {
+		if utilisateurProto.Preferences.Localisation != nil {
+			utilisateur.Preferences.Localisation.Adresse = utilisateurProto.Preferences.Localisation.Adresse
+			utilisateur.Preferences.Localisation.Ville = utilisateurProto.Preferences.Localisation.Ville
+			utilisateur.Preferences.Localisation.Cp = utilisateurProto.Preferences.Localisation.Cp
+		}
+		if utilisateurProto.Preferences.PointRetrait != nil {
+			utilisateur.Preferences.PointRetrait.Nom = utilisateurProto.Preferences.PointRetrait.Nom
+			if utilisateurProto.Preferences.PointRetrait.Localisation != nil {
+				utilisateur.Preferences.PointRetrait.Localisation.Adresse = utilisateurProto.Preferences.PointRetrait.Localisation.Adresse
+				utilisateur.Preferences.PointRetrait.Localisation.Ville = utilisateurProto.Preferences.PointRetrait.Localisation.Ville
+				utilisateur.Preferences.PointRetrait.Localisation.Cp = utilisateurProto.Preferences.PointRetrait.Localisation.Cp
+			}
+		}
 	}
 
 	if utilisateurProto.ID != "" {
@@ -146,26 +145,29 @@ func FromUtilisateurPB(utilisateurProto *utilisateurpb.Utilisateur) (*Utilisateu
 
 //ToProduitPB parses a mongo produit document into a produit defined by the protobuff
 func (utilisateur *Utilisateur) ToUtilisateurPB() *utilisateurpb.Utilisateur {
-	return &utilisateurpb.Utilisateur{
+	utilisateurResp := &utilisateurpb.Utilisateur{
 		ID:             utilisateur.ID.Hex(),
 		Nom:            utilisateur.Nom,
 		Prenom:         utilisateur.Prenom,
 		Mail:           utilisateur.Mail,
 		HashMotDePasse: utilisateur.HashMotDePasse,
-		Preferences: &utilisateurpb.Preferences{
-			Localisation: &localisationpb.Localisation{
-				Adresse: utilisateur.Preferences.Localisation.Adresse,
-				Ville:   utilisateur.Preferences.Localisation.Ville,
-				Cp:      utilisateur.Preferences.Localisation.Cp,
-			},
-			PointRetrait: &pointRetraitpb.PointRetrait{
-				Nom: utilisateur.Preferences.PointRetrait.Nom,
-				Localisation: &localisationpb.Localisation{
-					Adresse: utilisateur.Preferences.PointRetrait.Localisation.Adresse,
-					Ville:   utilisateur.Preferences.PointRetrait.Localisation.Ville,
-					Cp:      utilisateur.Preferences.PointRetrait.Localisation.Cp,
-				},
-			},
-		},
 	}
+
+	if utilisateur.Preferences != nil {
+		if utilisateur.Preferences.Localisation != nil {
+			utilisateurResp.Preferences.Localisation.Adresse = utilisateur.Preferences.Localisation.Adresse
+			utilisateurResp.Preferences.Localisation.Ville = utilisateur.Preferences.Localisation.Ville
+			utilisateurResp.Preferences.Localisation.Cp = utilisateur.Preferences.Localisation.Cp
+		}
+		if utilisateur.Preferences.PointRetrait != nil {
+			utilisateurResp.Preferences.PointRetrait.Nom = utilisateur.Preferences.PointRetrait.Nom
+			if utilisateur.Preferences.PointRetrait.Localisation != nil {
+				utilisateurResp.Preferences.PointRetrait.Localisation.Adresse = utilisateur.Preferences.PointRetrait.Localisation.Adresse
+				utilisateurResp.Preferences.PointRetrait.Localisation.Ville = utilisateur.Preferences.PointRetrait.Localisation.Ville
+				utilisateurResp.Preferences.PointRetrait.Localisation.Cp = utilisateur.Preferences.PointRetrait.Localisation.Cp
+			}
+		}
+	}
+
+	return utilisateurResp
 }

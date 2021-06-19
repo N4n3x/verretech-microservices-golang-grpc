@@ -39,11 +39,12 @@ message BoolResponse {
 }
 
 message AuthResponse {
-    string token = 1;
+    bool state = 1;
+    Utilisateur utilisateur = 2;
 }
 
 service ServiceUtilisateur {
-    rpc InsertUtilisateur(UtilisateurRequest) returns (BoolResponse);
+    rpc AddUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
     rpc UpdateUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
     rpc GetUtilisateur(UtilisateurRequest) returns (UtilisateurResponse);
     rpc GetUtilisateurs(UtilisateursRequest) returns (UtilisateursResponse);

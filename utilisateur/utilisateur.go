@@ -9,6 +9,7 @@ import (
 	"verretech-microservices/utilisateur/documents"
 	"verretech-microservices/utilisateur/utilisateurpb"
 
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,8 +20,11 @@ type server struct {
 	utilisateurpb.UnimplementedServiceUtilisateurServer
 }
 
-func (server *server) AddProduit(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
+func (server *server) AddUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
 	mongoUtilisateur, _ := documents.FromUtilisateurPB(req.Utilisateur)
+	hpw, err := HashPassword(mongoUtilisateur.HashMotDePasse)
+	mongoUtilisateur.HashMotDePasse = hpw
+
 	// fmt.Printf("Mongo produit %+v\n", mongoProduit)
 	oid, err := mongoUtilisateur.InsertOne(*server.db.Database)
 	if err != nil {
@@ -32,7 +36,7 @@ func (server *server) AddProduit(ctx context.Context, req *utilisateurpb.Utilisa
 	return &response, nil
 }
 
-func (server *server) GetAllUtilisateurs(ctx context.Context, req *utilisateurpb.UtilisateursRequest) (*utilisateurpb.UtilisateursResponse, error) {
+func (server *server) GetUtilisateurs(ctx context.Context, req *utilisateurpb.UtilisateursRequest) (*utilisateurpb.UtilisateursResponse, error) {
 	u, err := documents.Find(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
@@ -48,88 +52,58 @@ func (server *server) GetAllUtilisateurs(ctx context.Context, req *utilisateurpb
 	return &response, nil
 }
 
-// func (server *server) GetProduitsByTags(ctx context.Context, req *produitpb.ProduitsByTags) (*produitpb.ProduitsResponse, error) {
-// 	fmt.Printf("%+v\n", req.Tags)
-// 	t := []string{}
-// 	for _, v := range req.Tags {
-// 		t = append(t, v)
-// 	}
+func (server *server) GetUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
+	var utilisateur documents.Utilisateur
+	utilisateur.Mail = req.Utilisateur.Mail
+	err := utilisateur.FindOne(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var response utilisateurpb.UtilisateurResponse
+	response.Utilisateur = utilisateur.ToUtilisateurPB()
+	return &response, nil
+}
 
-// 	fmt.Printf("%+v\n", t)
-// 	query := bson.M{
-// 		"tags": bson.M{"$all": t},
-// 	}
-// 	p, err := documents.FindByTags(*server.db.Database, query)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
-// 	}
-// 	var produits []documents.Produit
-// 	if err = p.All(ctx, &produits); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	var response produitpb.ListProduits
-// 	for _, pr := range produits {
-// 		response.Produits = append(response.Produits, pr.ToProduitPB())
-// 	}
-// 	var final produitpb.ProduitsResponse
-// 	final.Listproduits = &response
-// 	return &final, nil
-// }
+func (server *server) UpdateUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
+	mongoUtilisateur, _ := documents.FromUtilisateurPB(req.Utilisateur)
 
-// func (server *server) GetProduitByRef(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.ProduitResponse, error) {
-// 	var produit documents.Produit
-// 	produit.Ref = req.Ref
-// 	err := produit.FindOne(*server.db.Database)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
-// 	}
-// 	var response produitpb.ProduitResponse
-// 	response.Produit = produit.ToProduitPB()
-// 	return &response, nil
-// }
+	_, err := mongoUtilisateur.Update(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
+	var response utilisateurpb.UtilisateurResponse
+	response.Utilisateur = mongoUtilisateur.ToUtilisateurPB()
+	return &response, nil
+}
 
-// func (server *server) UpdateProduit(ctx context.Context, req *produitpb.ProduitRequest) (*produitpb.ProduitResponse, error) {
-// 	mongoProduit, _ := documents.FromProduitPB(req.Produit)
+func (server *server) Auth(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.AuthResponse, error) {
+	response := &utilisateurpb.AuthResponse{
+		State: false,
+	}
+	var utilisateur documents.Utilisateur
+	utilisateur.Mail = req.Utilisateur.Mail
+	err := utilisateur.FindOne(*server.db.Database)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
+	}
 
-// 	_, err := mongoProduit.Update(*server.db.Database)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
-// 	}
-// 	var response produitpb.ProduitResponse
-// 	response.Produit = mongoProduit.ToProduitPB()
-// 	return &response, nil
-// }
+	if CheckPasswordHash(req.Utilisateur.HashMotDePasse, utilisateur.HashMotDePasse) {
+		response.State = true
+		response.Utilisateur = utilisateur.ToUtilisateurPB()
+	}
 
-// func (server *server) UpdateProduits(ctx context.Context, req *produitpb.ProduitsRequest) (*produitpb.BoolResponse, error) {
-// 	var p []*documents.Produit
-// 	for _, e := range req.Produits {
-// 		mongoProduit, _ := documents.FromProduitPB(e)
-// 		p = append(p, mongoProduit)
-// 	}
+	return response, nil
+}
 
-// 	_, err := documents.UpdateAll(*server.db.Database, p)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
-// 	}
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
 
-// 	response := &produitpb.BoolResponse{
-// 		State: true,
-// 	}
-
-// 	return response, nil
-// }
-
-// func (server *server) DeleteProduit(ctx context.Context, req *produitpb.ProduitByRefRequest) (*produitpb.BoolResponse, error) {
-// 	var produit documents.Produit
-// 	produit.Ref = req.Ref
-// 	_, err := produit.Delete(*server.db.Database)
-// 	if err != nil {
-// 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
-// 	}
-// 	var response produitpb.BoolResponse
-// 	response.State = true
-// 	return &response, nil
-// }
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
 
 func main() {
 	lis, err := net.Listen("tcp", "0.0.0.0:50052")

@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceUtilisateurClient interface {
-	InsertUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*BoolResponse, error)
+	AddUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error)
 	UpdateUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error)
 	GetUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error)
 	GetUtilisateurs(ctx context.Context, in *UtilisateursRequest, opts ...grpc.CallOption) (*UtilisateursResponse, error)
@@ -33,9 +33,9 @@ func NewServiceUtilisateurClient(cc grpc.ClientConnInterface) ServiceUtilisateur
 	return &serviceUtilisateurClient{cc}
 }
 
-func (c *serviceUtilisateurClient) InsertUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*BoolResponse, error) {
-	out := new(BoolResponse)
-	err := c.cc.Invoke(ctx, "/utilisateur.ServiceUtilisateur/InsertUtilisateur", in, out, opts...)
+func (c *serviceUtilisateurClient) AddUtilisateur(ctx context.Context, in *UtilisateurRequest, opts ...grpc.CallOption) (*UtilisateurResponse, error) {
+	out := new(UtilisateurResponse)
+	err := c.cc.Invoke(ctx, "/utilisateur.ServiceUtilisateur/AddUtilisateur", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (c *serviceUtilisateurClient) Auth(ctx context.Context, in *UtilisateurRequ
 // All implementations must embed UnimplementedServiceUtilisateurServer
 // for forward compatibility
 type ServiceUtilisateurServer interface {
-	InsertUtilisateur(context.Context, *UtilisateurRequest) (*BoolResponse, error)
+	AddUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error)
 	UpdateUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error)
 	GetUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error)
 	GetUtilisateurs(context.Context, *UtilisateursRequest) (*UtilisateursResponse, error)
@@ -94,8 +94,8 @@ type ServiceUtilisateurServer interface {
 type UnimplementedServiceUtilisateurServer struct {
 }
 
-func (UnimplementedServiceUtilisateurServer) InsertUtilisateur(context.Context, *UtilisateurRequest) (*BoolResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InsertUtilisateur not implemented")
+func (UnimplementedServiceUtilisateurServer) AddUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUtilisateur not implemented")
 }
 func (UnimplementedServiceUtilisateurServer) UpdateUtilisateur(context.Context, *UtilisateurRequest) (*UtilisateurResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUtilisateur not implemented")
@@ -122,20 +122,20 @@ func RegisterServiceUtilisateurServer(s grpc.ServiceRegistrar, srv ServiceUtilis
 	s.RegisterService(&ServiceUtilisateur_ServiceDesc, srv)
 }
 
-func _ServiceUtilisateur_InsertUtilisateur_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ServiceUtilisateur_AddUtilisateur_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UtilisateurRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceUtilisateurServer).InsertUtilisateur(ctx, in)
+		return srv.(ServiceUtilisateurServer).AddUtilisateur(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/utilisateur.ServiceUtilisateur/InsertUtilisateur",
+		FullMethod: "/utilisateur.ServiceUtilisateur/AddUtilisateur",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceUtilisateurServer).InsertUtilisateur(ctx, req.(*UtilisateurRequest))
+		return srv.(ServiceUtilisateurServer).AddUtilisateur(ctx, req.(*UtilisateurRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -220,8 +220,8 @@ var ServiceUtilisateur_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceUtilisateurServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "InsertUtilisateur",
-			Handler:    _ServiceUtilisateur_InsertUtilisateur_Handler,
+			MethodName: "AddUtilisateur",
+			Handler:    _ServiceUtilisateur_AddUtilisateur_Handler,
 		},
 		{
 			MethodName: "UpdateUtilisateur",
