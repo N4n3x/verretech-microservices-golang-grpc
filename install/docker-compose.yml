@@ -4,8 +4,8 @@ services:
   produit:
     build:
       context: ./verretech-microservices/produit
-      dockerfile: ./produit/install/Dockerfile
+      dockerfile: produit/install/Dockerfile
   utilisateur:
     build:
-      context: ./verretech-microservices/utilisateur
-      dockerfile: ./utilisateur/install/Dockerfile
+      context: .
+      dockerfile: utilisateur/install/Dockerfile
