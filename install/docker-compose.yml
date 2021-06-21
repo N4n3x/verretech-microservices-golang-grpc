@@ -1,0 +1,11 @@
+version: '3.0'
+
+services:
+  produit:
+    build:
+      context: .
+      dockerfile: ./produit/install/Dockerfile
+  utilisateur:
+    build:
+      context: .
+      dockerfile: ./api/install/Dockerfile
