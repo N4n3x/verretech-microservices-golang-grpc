@@ -11,8 +11,9 @@ message Article {
 }
 
 message Panier {
-    utilisateur.Utilisateur utilisateur = 1;
-    repeated Article article = 2;
+    string ID = 1;
+    utilisateur.Utilisateur utilisateur = 2;
+    repeated Article article = 3;
 }
 
 message PanierRequest {
@@ -31,3 +32,4 @@ service ServicePanier {
     rpc UpdatePanier(PanierRequest) returns (PanierResponse);
     rpc GetPanier(ByUtilisateurRequest) returns (PanierResponse);
 }
+

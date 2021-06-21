@@ -20,7 +20,7 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données
 * ⏳ Conception des fonctions métiers
-### Commande (:50053)
+### Commande (:50054)
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données
 * ⏳ Conception des fonctions métiers
