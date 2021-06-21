@@ -3,9 +3,9 @@ version: '3.0'
 services:
   produit:
     build:
-      context: .
+      context: ./verretech-microservices/produit
       dockerfile: ./produit/install/Dockerfile
   utilisateur:
     build:
-      context: .
+      context: ./verretech-microservices/utilisateur
       dockerfile: ./utilisateur/install/Dockerfile
