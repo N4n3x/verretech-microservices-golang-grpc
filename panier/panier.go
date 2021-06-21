@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"verretech-microservices/database"
@@ -12,6 +13,14 @@ import (
 type server struct {
 	db *database.Mongo
 	panierpb.UnimplementedServicePanierServer
+}
+
+func (server *server) UpdatePanier(ctx context.Context, panier *panierpb.PanierRequest) (*panierpb.PanierResponse, error) {
+	return &panierpb.PanierResponse{}, nil
+}
+
+func (server *server) GetPanier(ctx context.Context, panier *panierpb.ByUtilisateurRequest) (*panierpb.PanierResponse, error) {
+	return &panierpb.PanierResponse{}, nil
 }
 
 func main() {
