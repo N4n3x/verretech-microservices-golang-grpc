@@ -54,6 +54,7 @@ Architecture micro services en GO pour site e-Commerce
   * ⏳ GET /commande/ID
 * Indicateur
   * ⏳ GET /indicateur?params=###
+### Gestion d'erreurs ⏳
 
 ### CMD
 * Générer les interfaces du protocol buffer:

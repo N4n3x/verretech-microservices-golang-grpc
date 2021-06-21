@@ -28,6 +28,7 @@ var cache store.Cache
 /// AddUtilisateur
 // @return Utilisateur
 func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	var u utilisateurpb.Utilisateur
 	_ = json.NewDecoder(r.Body).Decode(&u)
 	fmt.Printf("%+v\n", &u)
@@ -41,10 +42,11 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := utilisateurClient.AddUtilisateur(context.Background(), b)
 	if err != nil {
-		log.Fatalf("Unable to insert Utilisateur: %v", err)
+		fmt.Printf("Unable to update Utilisateur: %v", err)
+		json.NewEncoder(w).Encode(err)
+	} else {
+		json.NewEncoder(w).Encode(res)
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
 }
 
 /// GetUtilisateurs
@@ -75,7 +77,30 @@ func GetUtilisateurs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(utilisateurs)
 }
 
-///TODO: Update Utilisateur
+///UpdateUtilisateur
+// @return Utilisateur (with ID)
+func UpdateUtilisateur(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var u utilisateurpb.Utilisateur
+	_ = json.NewDecoder(r.Body).Decode(&u)
+	fmt.Printf("%+v\n", &u)
+	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	if err != nil {
+		///TODO: Gestion erreur
+		log.Fatalf("Unable to connect to server : %v", err)
+	}
+	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
+	b := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &u,
+	}
+	res, err := utilisateurClient.UpdateUtilisateur(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Unable to update Utilisateur: %v", err)
+		json.NewEncoder(w).Encode(err)
+	} else {
+		json.NewEncoder(w).Encode(res)
+	}
+}
 
 ///TODO: Delete Utilisateur
 
@@ -233,8 +258,9 @@ func authMiddleware(next http.Handler) http.HandlerFunc {
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/auth/token", createToken).Methods("GET")
-	myRouter.HandleFunc("/produit", GetProduits)
-	myRouter.HandleFunc("/produit/{ref}", GetProduitByRef)
+	myRouter.HandleFunc("/produit", GetProduits).Methods("GET")
+	myRouter.HandleFunc("/produit/{ref}", GetProduitByRef).Methods("GET")
+	myRouter.HandleFunc("/utilisateur", UpdateUtilisateur).Methods("PUT")
 	myRouter.HandleFunc("/utilisateur", AddUtilisateur).Methods("POST")
 	myRouter.HandleFunc("/utilisateur", authMiddleware(http.HandlerFunc(GetUtilisateurs))).Methods("GET")
 	myRouter.Use(loggingMiddleware)
