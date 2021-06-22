@@ -22,6 +22,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type Token struct {
+	Token string `json:"token"`
+}
+
 var authenticator auth.Authenticator
 var cache store.Cache
 
@@ -187,7 +191,24 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func setupResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		setupResponse(&w, r)
+		if (*r).Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func createToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	token := uuid.New().String()
 	user, err := authenticator.Authenticate(r)
 	if err != nil {
@@ -200,8 +221,9 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 
 	tokenStrategy := authenticator.Strategy(bearer.CachedStrategyKey)
 	auth.Append(tokenStrategy, token, user, r)
-	body := fmt.Sprintf("token: %s \n", token)
-	w.Write([]byte(body))
+	body := &Token{Token: token}
+	// body := fmt.Sprintf("token: %s \n", token)
+	json.NewEncoder(w).Encode(body)
 }
 
 func setupGoGuardian() {
@@ -257,6 +279,7 @@ func authMiddleware(next http.Handler) http.HandlerFunc {
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter.Use(corsMiddleware)
 	myRouter.HandleFunc("/auth/token", createToken).Methods("GET")
 	myRouter.HandleFunc("/produit", GetProduits).Methods("GET")
 	myRouter.HandleFunc("/produit/{ref}", GetProduitByRef).Methods("GET")
