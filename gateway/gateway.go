@@ -22,8 +22,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Token struct {
-	Token string `json:"token"`
+type AuthResponse struct {
+	Token       string          `json:"token"`
+	Utilisateur doc.Utilisateur `json:"utilisateur"`
 }
 
 var authenticator auth.Authenticator
@@ -217,13 +218,34 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(code), code)
 		return
 	}
-	fmt.Printf("Auth: %+v\n", r)
-
+	fmt.Printf("Auth: %+v\n", user.UserName())
 	tokenStrategy := authenticator.Strategy(bearer.CachedStrategyKey)
 	auth.Append(tokenStrategy, token, user, r)
-	body := &Token{Token: token}
+
+	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Unable to connect to server : %v", err)
+	}
+	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
+	body := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &utilisateurpb.Utilisateur{
+			Mail: user.UserName(),
+		},
+	}
+	res, err := utilisateurClient.GetUtilisateur(context.Background(), body)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	utilisateurInfo, errU := doc.FromUtilisateurPB(res.Utilisateur)
+	if errU != nil {
+		fmt.Printf("Error: %v", errU)
+	}
+	resp := &AuthResponse{
+		Token:       token,
+		Utilisateur: *utilisateurInfo,
+	}
 	// body := fmt.Sprintf("token: %s \n", token)
-	json.NewEncoder(w).Encode(body)
+	json.NewEncoder(w).Encode(resp)
 }
 
 func setupGoGuardian() {
