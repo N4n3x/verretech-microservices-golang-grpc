@@ -1,0 +1,294 @@
+{
+	"info": {
+		"_postman_id": "b14aa85f-91f4-455b-863e-26ab23b54edc",
+		"name": "Airtable Verretech",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET All produits",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Nom&fields%5B%5D=Prix",
+					"protocol": "https",
+					"host": [
+						"api",
+						"airtable",
+						"com"
+					],
+					"path": [
+						"v0",
+						"appjpwR0Jl093ePaL",
+						"Produit"
+					],
+					"query": [
+						{
+							"key": "view",
+							"value": "Grid%20view"
+						},
+						{
+							"key": "fields%5B%5D",
+							"value": "Ref"
+						},
+						{
+							"key": "fields%5B%5D",
+							"value": "Nom"
+						},
+						{
+							"key": "fields%5B%5D",
+							"value": "Prix"
+						},
+						{
+							"key": "maxRecords",
+							"value": "3",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Produits update",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:50050/updateProduits",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "50050",
+					"path": [
+						"updateProduits"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gateway test tags",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/produitByTag?tag=PdT",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"produitByTag"
+					],
+					"query": [
+						{
+							"key": "tag",
+							"value": "PdT"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Utilisateur",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "37e51451-5b48-496b-b7ed-ce8c59042e9f",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/utilisateur",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"utilisateur"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Utilisateur",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nom\": \"Test\",\r\n    \"prenom\": \"Alex\",\r\n    \"mail\": \"test@mail.com\",\r\n    \"hashMotDePasse\": \"motdepasse\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:10000/utilisateur",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"utilisateur"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Utilisateur Copy",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"ID\": \"60cde71f9fcb840b4bc5a9cc\",\r\n        \"Nom\": \"Test\",\r\n        \"Prenom\": \"Alex\",\r\n        \"Mail\": \"test@mail.com\",\r\n        \"HashMotDePasse\": \"$2a$14$TcKWBP.BoeVlkL7bGlNIhesm.DZaCCKfSKI/U2ueD4SIGbRNY5A2G\",\r\n        \"Preferences\": null,\r\n        \"Permission\": [\"Admin\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:10000/utilisateur",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"utilisateur"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "motdepasse",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test@mail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/auth/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth Copy",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "motdepasse",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "test@mail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:10000/auth/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "10000",
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "test auth",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "952dae8d-f0a6-43c9-a2b5-990960907bcb",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/v1/book/1449311601",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v1",
+						"book",
+						"1449311601"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "keyCKETjZguzbEMJs",
+				"type": "string"
+			}
+		]
+	}
+}
