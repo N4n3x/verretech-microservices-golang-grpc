@@ -3,8 +3,6 @@ package documents
 import (
 	"context"
 	"verretech-microservices/panier/panierpb"
-	produitDoc "verretech-microservices/produit/documents"
-	utilisateurDoc "verretech-microservices/utilisateur/documents"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,20 +14,21 @@ import (
 const panierCollection = "panier"
 
 type Article struct {
-	Produit *produitDoc.Produit `bson:"produit"`
-	Qte     int32               `bson:"quantite"`
+	ProduitRef string `bson:"produitRef"`
+	Qte        int32  `bson:"quantite"`
 }
 
 type Panier struct {
-	ID          primitive.ObjectID          `bson:"_id,omitempty"`
-	Utilisateur *utilisateurDoc.Utilisateur `bson:"utilisateur"`
-	Articles    []*Article                  `bson:"articles"`
+	ID            *primitive.ObjectID `bson:"_id"`
+	UtilisateurID primitive.ObjectID  `bson:"utilisateurID"`
+	Articles      []*Article          `bson:"articles"`
 }
 
 //@return Panier if ID match
-func FindByID(db mongo.Database, id primitive.M) *mongo.SingleResult {
+func (panier *Panier) FindByID(db mongo.Database, id primitive.ObjectID) {
 	collection := db.Collection(panierCollection)
-	return collection.FindOne(context.Background(), id)
+	query := bson.M{"utilisateurID": id}
+	collection.FindOne(context.Background(), query).Decode(panier)
 }
 
 //Update updates the specified Panier within the database
@@ -38,11 +37,11 @@ func (panier *Panier) Update(db mongo.Database) (int, error) {
 	collection := db.Collection(panierCollection)
 	update := bson.M{
 		"$set": bson.M{
-			"utilisateur": panier.Utilisateur,
-			"articles":    panier.Articles,
+			"utilisateurID": panier.UtilisateurID,
+			"articles":      panier.Articles,
 		},
 	}
-	res, err := collection.UpdateOne(context.Background(), bson.M{"_id": panier.ID}, update, opts)
+	res, err := collection.UpdateOne(context.Background(), bson.M{"utilisateurID": panier.UtilisateurID}, update, opts)
 	if err != nil {
 		return 0, err
 	}
@@ -50,20 +49,17 @@ func (panier *Panier) Update(db mongo.Database) (int, error) {
 }
 
 func (panier *Panier) ToPanierPB() *panierpb.Panier {
-	panierResp := &panierpb.Panier{
-		ID: panier.ID.Hex(),
-		// Utilisateur:    panier.Utilisateur,
-		// Articles:       panier.Articles,
-	}
 
-	if panier.Utilisateur != nil {
-		panierResp.Utilisateur = panier.Utilisateur.ToUtilisateurPB()
+	panierResp := &panierpb.Panier{}
+	if panier.ID != nil {
+		panierResp.ID = panier.ID.Hex()
 	}
+	panierResp.UtilisateurID = panier.UtilisateurID.Hex()
 	if panier.Articles != nil {
 		for _, v := range panier.Articles {
 			artpb := panierpb.Article{
-				Qte:     v.Qte,
-				Produit: v.Produit.ToProduitPB(),
+				Qte:        v.Qte,
+				ProduitRef: v.ProduitRef,
 			}
 			panierResp.Article = append(panierResp.Article, &artpb)
 		}
@@ -72,21 +68,18 @@ func (panier *Panier) ToPanierPB() *panierpb.Panier {
 }
 
 func FromPanierPB(panierProto *panierpb.Panier) (*Panier, error) {
-	utilisateur, err := utilisateurDoc.FromUtilisateurPB(panierProto.Utilisateur)
-	if err != nil {
-		return nil, err
-	}
+	uid, _ := primitive.ObjectIDFromHex(panierProto.UtilisateurID)
 	panier := &Panier{
-		Utilisateur: utilisateur,
+		UtilisateurID: uid,
+	}
+	if panierProto.ID != "" {
+		oid, _ := primitive.ObjectIDFromHex(panierProto.ID)
+		panier.ID = &oid
 	}
 	for _, v := range panierProto.Article {
-		p, e := produitDoc.FromProduitPB(v.Produit)
-		if e != nil {
-			return nil, e
-		}
 		art := &Article{
-			Qte:     v.Qte,
-			Produit: p,
+			Qte:        v.Qte,
+			ProduitRef: v.ProduitRef,
 		}
 		panier.Articles = append(panier.Articles, art)
 	}

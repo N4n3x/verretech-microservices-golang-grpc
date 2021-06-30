@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	panierDoc "verretech-microservices/panier/documents"
+	"verretech-microservices/panier/panierpb"
 	"verretech-microservices/produit/documents"
 	"verretech-microservices/produit/produitpb"
 	doc "verretech-microservices/utilisateur/documents"
@@ -19,12 +21,21 @@ import (
 	"github.com/shaj13/go-guardian/auth/strategies/basic"
 	"github.com/shaj13/go-guardian/auth/strategies/bearer"
 	"github.com/shaj13/go-guardian/store"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 )
 
 type AuthResponse struct {
 	Token       string          `json:"token"`
 	Utilisateur doc.Utilisateur `json:"utilisateur"`
+}
+
+type Values struct {
+	m map[string]string
+}
+
+func (v Values) Get(key string) string {
+	return v.m[key]
 }
 
 var authenticator auth.Authenticator
@@ -39,7 +50,9 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("%+v\n", &u)
 	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
 	b := &utilisateurpb.UtilisateurRequest{
@@ -47,7 +60,7 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := utilisateurClient.AddUtilisateur(context.Background(), b)
 	if err != nil {
-		fmt.Printf("Unable to update Utilisateur: %v", err)
+		fmt.Printf("Unable to add Utilisateur: %v", err)
 		json.NewEncoder(w).Encode(err)
 	} else {
 		json.NewEncoder(w).Encode(res)
@@ -59,21 +72,30 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 func GetUtilisateurs(w http.ResponseWriter, r *http.Request) {
 	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
 	body := &utilisateurpb.UtilisateursRequest{}
 	res, err := utilisateurClient.GetUtilisateurs(context.Background(), body)
 	if err != nil {
-		log.Fatalf("Unable to get Products: %v", err)
+		fmt.Printf("Unable to get Products: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 
 	var utilisateurs []*doc.Utilisateur
 
 	for _, ut := range res.Utilisateur {
-		u, derr := doc.FromUtilisateurPB(ut)
-		if derr != nil {
-			log.Fatalf("Unable to get Products: %v", err)
+		u, err := doc.FromUtilisateurPB(ut)
+		if err != nil {
+			fmt.Printf("Unable to get Products: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err)
+			return
 		}
 		utilisateurs = append(utilisateurs, u)
 	}
@@ -83,26 +105,88 @@ func GetUtilisateurs(w http.ResponseWriter, r *http.Request) {
 }
 
 ///UpdateUtilisateur
+// Permission et ID exclu
 // @return Utilisateur (with ID)
 func UpdateUtilisateur(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var u utilisateurpb.Utilisateur
-	_ = json.NewDecoder(r.Body).Decode(&u)
-	fmt.Printf("%+v\n", &u)
+	user := r.Context().Value("user").(Values).Get("username")
+
 	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
 	if err != nil {
 		///TODO: Gestion erreur
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
 	}
 	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
+
+	ur := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &utilisateurpb.Utilisateur{
+			Mail: user,
+		},
+	}
+	uRep, err := utilisateurClient.GetUtilisateur(context.Background(), ur)
+	if err != nil {
+		fmt.Printf("Erreur Utilisateur : %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+
+	var u doc.Utilisateur
+	_ = json.NewDecoder(r.Body).Decode(&u)
+	// fmt.Printf("%+v\n", u)
+	// utilisateur := u.ToUtilisateurPB()
+
+	// uRep.Utilisateur.ID
+	// uRep.Utilisateur.Permission
+	if u.Mail != nil {
+		uRep.Utilisateur.Mail = *u.Mail
+	}
+	if u.Nom != nil {
+		uRep.Utilisateur.Nom = *u.Nom
+	}
+	if u.Prenom != nil {
+		uRep.Utilisateur.Prenom = *u.Prenom
+	}
+	if u.HashMotDePasse != nil {
+		pass := *u.HashMotDePasse
+		hashpass, err := HashPassword(pass)
+		if err != nil {
+
+		}
+		uRep.Utilisateur.HashMotDePasse = hashpass
+	}
+	if u.Preferences != nil {
+		if u.Preferences.Localisation != nil {
+			uRep.Utilisateur.Preferences.Localisation.Adresse = u.Preferences.Localisation.Adresse
+			uRep.Utilisateur.Preferences.Localisation.Cp = u.Preferences.Localisation.Cp
+			uRep.Utilisateur.Preferences.Localisation.Ville = u.Preferences.Localisation.Ville
+		}
+		if u.Preferences.PointRetrait != nil {
+			uRep.Utilisateur.Preferences.PointRetrait.Nom = u.Preferences.PointRetrait.Nom
+			if u.Preferences.PointRetrait.Localisation != nil {
+				uRep.Utilisateur.Preferences.PointRetrait.Localisation.Adresse = u.Preferences.PointRetrait.Localisation.Adresse
+				uRep.Utilisateur.Preferences.PointRetrait.Localisation.Cp = u.Preferences.PointRetrait.Localisation.Cp
+				uRep.Utilisateur.Preferences.PointRetrait.Localisation.Ville = u.Preferences.PointRetrait.Localisation.Ville
+			}
+		}
+	}
+
+	//TODO: Hash password, Exclure autorisation
+
 	b := &utilisateurpb.UtilisateurRequest{
-		Utilisateur: &u,
+		Utilisateur: uRep.Utilisateur,
 	}
 	res, err := utilisateurClient.UpdateUtilisateur(context.Background(), b)
 	if err != nil {
 		fmt.Printf("Unable to update Utilisateur: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
+		return
 	} else {
+		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(res)
 	}
 }
@@ -117,7 +201,7 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 
 	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
 	}
 	produitClient := produitpb.NewServiceProduitClient(cc)
 	params := r.URL.Query().Get("tag")
@@ -128,14 +212,14 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 		b := &produitpb.ProduitsByTags{Tags: tags}
 		res, err := produitClient.GetProduitsByTags(context.Background(), b)
 		if err != nil {
-			log.Fatalf("Unable to get Products: %v", err)
+			fmt.Printf("Unable to get Products: %v", err)
 		}
 		data = res
 	} else {
 		b := &produitpb.GetAllProduitsRequest{}
 		res, err := produitClient.GetAllProduits(context.Background(), b)
 		if err != nil {
-			log.Fatalf("Unable to get Products: %v", err)
+			fmt.Printf("Unable to get Products: %v", err)
 		}
 		data = res
 	}
@@ -145,7 +229,7 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 	for _, pr := range data.Listproduits.Produits {
 		d, derr := documents.FromProduitPB(pr)
 		if derr != nil {
-			log.Fatalf("Unable to get Products: %v", err)
+			fmt.Printf("Unable to get Products: %v", err)
 		}
 		produits = append(produits, d)
 	}
@@ -165,7 +249,7 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 
 	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
 	}
 	produitClient := produitpb.NewServiceProduitClient(cc)
 	b := &produitpb.ProduitByRefRequest{
@@ -173,14 +257,107 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := produitClient.GetProduitByRef(context.Background(), b)
 	if err != nil {
-		log.Fatalf("Unable to get Products: %v", err)
+		fmt.Printf("Unable to get Products: %v", err)
 	}
 	produit, perr := documents.FromProduitPB(res.Produit)
 	if perr != nil {
-		log.Fatalf("Unable to get Products: %v", err)
+		fmt.Printf("Unable to get Products: %v", err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(produit)
+}
+
+///
+//PANIER
+///
+func GetPanier(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	// key := vars["utilisateurid"]
+	user := r.Context().Value("user").(Values).Get("username")
+	fmt.Printf("USER: %+v\n", user)
+
+	cu, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
+	ur := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &utilisateurpb.Utilisateur{
+			Mail: user,
+		},
+	}
+	uRep, err := utilisateurClient.GetUtilisateur(context.Background(), ur)
+	if err != nil {
+		json.NewEncoder(w).Encode("Erreur Utilisateur")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	cc, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	panierClient := panierpb.NewServicePanierClient(cc)
+
+	b := &panierpb.ByUtilisateurRequest{
+		UtilisateurID: uRep.Utilisateur.ID,
+	}
+	res, err := panierClient.GetPanier(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	panier, err := panierDoc.FromPanierPB(res.Panier)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	json.NewEncoder(w).Encode(panier)
+}
+
+func UpdatePanier(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	user := r.Context().Value("user").(Values).Get("username")
+	cu, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
+	ur := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &utilisateurpb.Utilisateur{
+			Mail: user,
+		},
+	}
+	uRep, err := utilisateurClient.GetUtilisateur(context.Background(), ur)
+	if err != nil {
+		json.NewEncoder(w).Encode("Erreur Utilisateur")
+		return
+	}
+
+	cc, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	panierClient := panierpb.NewServicePanierClient(cc)
+	var pa []*panierpb.Article
+	err = json.NewDecoder(r.Body).Decode(&pa)
+	if err != nil {
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+	b := &panierpb.PanierRequest{
+		Panier: &panierpb.Panier{
+			UtilisateurID: uRep.Utilisateur.ID,
+			Article:       pa,
+		},
+	}
+	res, err := panierClient.UpdatePanier(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	panier, err := panierDoc.FromPanierPB(res.Panier)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	json.NewEncoder(w).Encode(panier)
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -248,6 +425,11 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
 func setupGoGuardian() {
 	authenticator = auth.New()
 	cache = store.NewFIFO(context.Background(), time.Minute*10)
@@ -295,6 +477,18 @@ func authMiddleware(next http.Handler) http.HandlerFunc {
 			return
 		}
 		log.Printf("User %s Authenticated\n", user.UserName())
+
+		v := Values{map[string]string{
+			"username": user.UserName(),
+		}}
+
+		// c := context.Background()
+		// c2 := context.WithValue(c, "myvalues", v)
+
+		// fmt.Println(c2.Value("myvalues").(Values).Get("2"))
+		// usr := Values{}
+		ctx := context.WithValue(r.Context(), "user", v)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -305,9 +499,13 @@ func handleRequests() {
 	myRouter.HandleFunc("/auth/token", createToken).Methods("GET")
 	myRouter.HandleFunc("/produit", GetProduits).Methods("GET")
 	myRouter.HandleFunc("/produit/{ref}", GetProduitByRef).Methods("GET")
-	myRouter.HandleFunc("/utilisateur", UpdateUtilisateur).Methods("PUT")
+	myRouter.HandleFunc("/utilisateur", authMiddleware(http.HandlerFunc(UpdateUtilisateur))).Methods("PUT")
 	myRouter.HandleFunc("/utilisateur", AddUtilisateur).Methods("POST")
 	myRouter.HandleFunc("/utilisateur", authMiddleware(http.HandlerFunc(GetUtilisateurs))).Methods("GET")
+	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(GetPanier))).Methods("GET")
+	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("POST")
+	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("PUT")
+	///TODO: GetPointsRetrait
 	myRouter.Use(loggingMiddleware)
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }

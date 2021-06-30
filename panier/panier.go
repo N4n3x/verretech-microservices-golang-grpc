@@ -5,8 +5,10 @@ import (
 	"log"
 	"net"
 	"verretech-microservices/database"
+	"verretech-microservices/panier/documents"
 	"verretech-microservices/panier/panierpb"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc"
 )
 
@@ -15,12 +17,37 @@ type server struct {
 	panierpb.UnimplementedServicePanierServer
 }
 
-func (server *server) UpdatePanier(ctx context.Context, panier *panierpb.PanierRequest) (*panierpb.PanierResponse, error) {
-	return &panierpb.PanierResponse{}, nil
+func (server *server) UpdatePanier(ctx context.Context, panierReq *panierpb.PanierRequest) (*panierpb.PanierResponse, error) {
+	panier, err := documents.FromPanierPB(panierReq.Panier)
+	if err != nil {
+		return &panierpb.PanierResponse{}, err
+	}
+	_, err = panier.Update(*server.db.Database)
+	if err != nil {
+		return &panierpb.PanierResponse{}, err
+	}
+	idUtilisateur, err := primitive.ObjectIDFromHex(panierReq.Panier.UtilisateurID)
+	var panierRep documents.Panier
+	panierRep.FindByID(*server.db.Database, idUtilisateur)
+	// var panierInter documents.Panier
+	// panierRep.Decode(panierInter)
+	// fmt.Printf("Update: %v\n", panierRep)
+	return &panierpb.PanierResponse{
+		Panier: panierRep.ToPanierPB(),
+	}, nil
 }
 
-func (server *server) GetPanier(ctx context.Context, panier *panierpb.ByUtilisateurRequest) (*panierpb.PanierResponse, error) {
-	return &panierpb.PanierResponse{}, nil
+func (server *server) GetPanier(ctx context.Context, req *panierpb.ByUtilisateurRequest) (*panierpb.PanierResponse, error) {
+	idUtilisateur, err := primitive.ObjectIDFromHex(req.UtilisateurID)
+	if err != nil {
+		return nil, err
+	}
+	var panier documents.Panier
+	panier.FindByID(*server.db.Database, idUtilisateur)
+	p := panier.ToPanierPB()
+	return &panierpb.PanierResponse{
+		Panier: p,
+	}, nil
 }
 
 func main() {

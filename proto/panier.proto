@@ -2,17 +2,17 @@ syntax = "proto3";
 
 package panier;
 option go_package="verretech-microservices/panier/panierpb";
-import "proto/utilisateur.proto";
-import "proto/produit.proto";
+// import "proto/utilisateur.proto";
+// import "proto/produit.proto";
 
 message Article {
-    produit.Produit produit = 1;
+    string produitRef = 1;
     int32 qte = 2;
 }
 
 message Panier {
     string ID = 1;
-    utilisateur.Utilisateur utilisateur = 2;
+    string utilisateurID = 2;
     repeated Article article = 3;
 }
 
@@ -21,7 +21,7 @@ message PanierRequest {
 }
 
 message ByUtilisateurRequest {
-    utilisateur.Utilisateur utilisateur = 1;
+    string utilisateurID = 1;
 }
 
 message PanierResponse {
