@@ -5,6 +5,7 @@ RUN CGO_ENABLED=0
 ADD . /app
 ENV GOPATH /go
 WORKDIR /app
+COPY . .
 RUN go get
 RUN go build
 
