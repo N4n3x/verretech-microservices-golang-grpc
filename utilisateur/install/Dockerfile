@@ -9,5 +9,5 @@ RUN go mod download
 
 
 RUN CGO_ENABLED=0 go build -o user .
-CMD [ "./user" ]
+CMD [ "user" ]
 EXPOSE 4747
