@@ -6,6 +6,8 @@ RUN CGO_ENABLED=0
 ADD . /go/src/verretech-microservices/install
 ENV GOPATH /go
 WORKDIR /go/src/verretech-microservices/install
+COPY . .
+RUN go mod download
 RUN go get
 RUN go build
 
