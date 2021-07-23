@@ -9,5 +9,5 @@ RUN go mod download
 
 
 RUN CGO_ENABLED=0 go build -o produit .
-CMD [ "produit"]
+ENTRYPOINT ["/produit"]
 EXPOSE 4747
