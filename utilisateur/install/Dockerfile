@@ -8,6 +8,6 @@ COPY . .
 RUN go mod download
 
 
-RUN CGO_ENABLED=0 go build -o user.go
-CMD [ "app" ]
+RUN CGO_ENABLED=0 go build -o user .
+CMD [ "./user" ]
 EXPOSE 4747
