@@ -3,9 +3,9 @@ version: '3.0'
 services:
   produit:
     build:
-      context: /home/ubuntu/verretech-microservices/utilisateur/install
+      context: .
       dockerfile: /home/ubuntu/verretech-microservices/produit/install/Dockerfile
   utilisateur:
     build:
-      context: /home/ubuntu/verretech-microservices/utilisateur/install
+      context: .
       dockerfile: /home/ubuntu/verretech-microservices/utilisateur/install/Dockerfile
