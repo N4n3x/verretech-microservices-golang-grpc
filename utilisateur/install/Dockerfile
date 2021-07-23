@@ -4,7 +4,10 @@ RUN mkdir /app
 WORKDIR /app
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64
-#TODO trouver le bon exec
 
+RUN go mod download
+
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/cimongo
+ENTRYPOINT [ "/go/bin/cimongo" ]
 EXPOSE 4747
