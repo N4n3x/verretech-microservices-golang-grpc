@@ -1,11 +1,11 @@
-FROM golang:latest
 
-RUN mkdir /app
+FROM golang:latest
+RUN mkdir -p /go/src/verretech-microservices/install
 RUN CGO_ENABLED=0
-ADD . /app
+
+ADD . /go/src/verretech-microservices/install
 ENV GOPATH /go
-WORKDIR /app
-COPY . .
+WORKDIR /go/src/verretech-microservices/install
 RUN go get
 RUN go build
 
@@ -14,8 +14,8 @@ RUN apk update
 RUN apk add curl
 
 RUN mkdir -p /app
-COPY --from=builder /go/src/verretech-microservices/produit/ /app/
+COPY --from=builder /go/src/verretech-microservices/install /app/
 RUN chmod +x /app/api
 WORKDIR /app
-EXPOSE 4747
+EXPOSE 5001
 ENTRYPOINT ["/app/api"]
