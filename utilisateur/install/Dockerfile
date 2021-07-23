@@ -7,7 +7,7 @@ COPY . .
 
 RUN go mod download
 
-#go build -a -installsuffix cgo -o /go/bin/cimongo
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
+
+RUN CGO_ENABLED=0 go build -o user.go
 CMD [ "app" ]
 EXPOSE 4747
