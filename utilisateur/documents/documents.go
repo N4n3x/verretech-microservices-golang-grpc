@@ -34,13 +34,13 @@ type Preferences struct {
 }
 
 type Utilisateur struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty"`
-	Nom            string             `bson:"nom"`
-	Prenom         string             `bson:"prenom"`
-	Mail           string             `bson:"mail"`
-	HashMotDePasse string             `bson:"hashmotdepasse"`
-	Preferences    *Preferences       `bson:"preferences"`
-	Permission     []string           `bson:"permission"`
+	ID             *primitive.ObjectID `bson:"_id,omitempty"`
+	Nom            *string             `bson:"nom"`
+	Prenom         *string             `bson:"prenom"`
+	Mail           *string             `bson:"mail"`
+	HashMotDePasse *string             `bson:"hashmotdepasse"`
+	Preferences    *Preferences        `bson:"preferences"`
+	Permission     *[]string           `bson:"permission"`
 }
 
 // InsertOne Ajoute un utilisateur en base de données
@@ -110,14 +110,22 @@ func (utilisateur *Utilisateur) Delete(db mongo.Database) (int, error) {
 func FromUtilisateurPB(utilisateurProto *utilisateurpb.Utilisateur) (*Utilisateur, error) {
 	// fmt.Printf("%+v\n", utilisateurProto)
 	///TODO: Null safety
-	utilisateur := &Utilisateur{
-		Nom:            utilisateurProto.Nom,
-		Prenom:         utilisateurProto.Prenom,
-		Mail:           utilisateurProto.Mail,
-		HashMotDePasse: utilisateurProto.HashMotDePasse,
-		Permission:     utilisateurProto.Permission,
+	utilisateur := &Utilisateur{}
+	if utilisateurProto.Nom != "" {
+		utilisateur.Nom = &utilisateurProto.Nom
 	}
-
+	if utilisateurProto.Prenom != "" {
+		utilisateur.Prenom = &utilisateurProto.Prenom
+	}
+	if utilisateurProto.Mail != "" {
+		utilisateur.Mail = &utilisateurProto.Mail
+	}
+	if utilisateurProto.HashMotDePasse != "" {
+		utilisateur.HashMotDePasse = &utilisateurProto.HashMotDePasse
+	}
+	if utilisateurProto.Permission != nil {
+		utilisateur.Permission = &utilisateurProto.Permission
+	}
 	if utilisateurProto.Preferences != nil {
 		if utilisateurProto.Preferences.Localisation != nil {
 			utilisateur.Preferences.Localisation.Adresse = utilisateurProto.Preferences.Localisation.Adresse
@@ -136,7 +144,7 @@ func FromUtilisateurPB(utilisateurProto *utilisateurpb.Utilisateur) (*Utilisateu
 
 	if utilisateurProto.ID != "" {
 		oid, _ := primitive.ObjectIDFromHex(utilisateurProto.ID)
-		utilisateur.ID = oid
+		utilisateur.ID = &oid
 	}
 
 	// fmt.Printf("End convert %+v\n", utilisateur)
@@ -145,12 +153,21 @@ func FromUtilisateurPB(utilisateurProto *utilisateurpb.Utilisateur) (*Utilisateu
 
 //ToProduitPB parses a mongo produit document into a produit defined by the protobuff
 func (utilisateur *Utilisateur) ToUtilisateurPB() *utilisateurpb.Utilisateur {
-	utilisateurResp := &utilisateurpb.Utilisateur{
-		ID:             utilisateur.ID.Hex(),
-		Nom:            utilisateur.Nom,
-		Prenom:         utilisateur.Prenom,
-		Mail:           utilisateur.Mail,
-		HashMotDePasse: utilisateur.HashMotDePasse,
+	utilisateurResp := &utilisateurpb.Utilisateur{}
+	if utilisateur.ID != nil {
+		utilisateurResp.ID = utilisateur.ID.Hex()
+	}
+	if utilisateur.Nom != nil {
+		utilisateurResp.Nom = *utilisateur.Nom
+	}
+	if utilisateur.Prenom != nil {
+		utilisateurResp.Prenom = *utilisateur.Prenom
+	}
+	if utilisateur.Mail != nil {
+		utilisateurResp.Mail = *utilisateur.Mail
+	}
+	if utilisateur.HashMotDePasse != nil {
+		utilisateurResp.HashMotDePasse = *utilisateur.HashMotDePasse
 	}
 
 	if utilisateur.Preferences != nil {

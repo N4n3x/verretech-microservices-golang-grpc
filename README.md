@@ -40,8 +40,8 @@ Architecture micro services en GO pour site e-Commerce
 * Utilisateur
   * ✅ POST /utilisateur
   * ✅ GET /utilisateur?params=###
-  * ⏳ GET /utilisateur/ID
-  * ⏳ PUT /utilisateur/ID
+  * ✅ GET /utilisateur
+  * ✅ PUT /utilisateur
   * ⏳ DELETE /utilisateur/ID
 * Panier
   * ⏳ POST /panier

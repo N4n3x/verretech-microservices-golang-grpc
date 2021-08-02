@@ -22,15 +22,15 @@ type server struct {
 
 func (server *server) AddUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
 	mongoUtilisateur, _ := documents.FromUtilisateurPB(req.Utilisateur)
-	hpw, err := HashPassword(mongoUtilisateur.HashMotDePasse)
-	mongoUtilisateur.HashMotDePasse = hpw
+	hpw, err := HashPassword(*mongoUtilisateur.HashMotDePasse)
+	mongoUtilisateur.HashMotDePasse = &hpw
 
 	// fmt.Printf("Mongo produit %+v\n", mongoProduit)
 	oid, err := mongoUtilisateur.InsertOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
-	mongoUtilisateur.ID = oid
+	mongoUtilisateur.ID = &oid
 	var response utilisateurpb.UtilisateurResponse
 	response.Utilisateur = mongoUtilisateur.ToUtilisateurPB()
 	return &response, nil
@@ -54,7 +54,7 @@ func (server *server) GetUtilisateurs(ctx context.Context, req *utilisateurpb.Ut
 
 func (server *server) GetUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
 	var utilisateur documents.Utilisateur
-	utilisateur.Mail = req.Utilisateur.Mail
+	utilisateur.Mail = &req.Utilisateur.Mail
 	err := utilisateur.FindOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
@@ -65,14 +65,14 @@ func (server *server) GetUtilisateur(ctx context.Context, req *utilisateurpb.Uti
 }
 
 func (server *server) UpdateUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
-	mongoUtilisateur, _ := documents.FromUtilisateurPB(req.Utilisateur)
+	utilisateur, _ := documents.FromUtilisateurPB(req.Utilisateur)
 
-	_, err := mongoUtilisateur.Update(*server.db.Database)
+	_, err := utilisateur.Update(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
 	var response utilisateurpb.UtilisateurResponse
-	response.Utilisateur = mongoUtilisateur.ToUtilisateurPB()
+	response.Utilisateur = utilisateur.ToUtilisateurPB()
 	return &response, nil
 }
 
@@ -81,13 +81,13 @@ func (server *server) Auth(ctx context.Context, req *utilisateurpb.UtilisateurRe
 		State: false,
 	}
 	var utilisateur documents.Utilisateur
-	utilisateur.Mail = req.Utilisateur.Mail
+	utilisateur.Mail = &req.Utilisateur.Mail
 	err := utilisateur.FindOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
 
-	if CheckPasswordHash(req.Utilisateur.HashMotDePasse, utilisateur.HashMotDePasse) {
+	if CheckPasswordHash(req.Utilisateur.HashMotDePasse, *utilisateur.HashMotDePasse) {
 		response.State = true
 		response.Utilisateur = utilisateur.ToUtilisateurPB()
 	}
