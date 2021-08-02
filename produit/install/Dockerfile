@@ -1,11 +1,21 @@
+
 FROM golang:latest
+RUN mkdir -p /go/src/verretech-microservices/install
+RUN CGO_ENABLED=0
 
-RUN mkdir /app
+ADD . /go/src/verretech-microservices/install
+ENV GOPATH /go
+WORKDIR /go/src/verretech-microservices
+
+
+
+FROM alpine
+RUN apk update
+RUN apk add curl
+
+RUN mkdir -p /app
+COPY  . /app/
+RUN chmod +x /app
 WORKDIR /app
-COPY . .
-
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
-#TODO trouver le bon exec
-
-EXPOSE 4747
+EXPOSE 5001
+ENTRYPOINT ["/app/api"]
