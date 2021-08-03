@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	documents_erp "verretech-microservices/erp/documents"
 	"verretech-microservices/produit/produitpb"
 
@@ -14,10 +15,13 @@ import (
 	"google.golang.org/grpc"
 )
 
+var ERP_PORT string
+var PRODUIT_SERV string
+var API_KEY string
+
 ///TODO: Fonction de mise à jour des produits
 func UpdateProduits(w http.ResponseWriter, r *http.Request) {
-	log.Println("ok")
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	cc, err := grpc.Dial(PRODUIT_SERV, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Unable to connect to server : %v", err)
 	}
@@ -25,7 +29,7 @@ func UpdateProduits(w http.ResponseWriter, r *http.Request) {
 
 	/// Récupération de la liste de produits dans l'ERP
 	url := "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view"
-	var bearer = "Bearer " + "keyCKETjZguzbEMJs"
+	var bearer = "Bearer " + API_KEY //"keyCKETjZguzbEMJs"
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("Authorization", bearer)
 	client := &http.Client{}
@@ -54,7 +58,7 @@ func UpdateProduits(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := produitClient.UpdateProduits(context.Background(), pReq)
 	if err != nil {
-		log.Fatalf("Unable to update Products: %v", err)
+		log.Println("Unable to update Products: ", err)
 	}
 	json.NewEncoder(w).Encode(res.State)
 }
@@ -62,10 +66,26 @@ func UpdateProduits(w http.ResponseWriter, r *http.Request) {
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/updateProduits", UpdateProduits)
-	log.Fatal(http.ListenAndServe(":50050", myRouter))
+	fmt.Println("ERP Connector => startup complete, listen on port ", ERP_PORT)
+	log.Fatal(http.ListenAndServe(":"+ERP_PORT, myRouter))
 }
 
 func main() {
+	fmt.Println("ERP Connector => Starting...")
+	ERP_PORT = os.Getenv("ERP_PORT")
+	if ERP_PORT == "" {
+		ERP_PORT = "50050"
+		fmt.Println("ERP Connector => ERP_PORT variable not found, 50050 used")
+	}
+	PRODUIT_SERV = os.Getenv("PRODUIT_SERV")
+	if PRODUIT_SERV == "" {
+		PRODUIT_SERV = "localhost:50051"
+		fmt.Println("ERP Connector => PRODUIT_SERV variable not found, localhost:50051 used")
+	}
+	API_KEY = os.Getenv("API_KEY")
+	if API_KEY == "" {
+		log.Fatal("ERP Connector => API_KEY variable not found")
+	}
 	handleRequests()
 }
 

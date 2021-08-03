@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"verretech-microservices/database"
 	"verretech-microservices/utilisateur/documents"
 	"verretech-microservices/utilisateur/utilisateurpb"
@@ -106,10 +107,17 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func main() {
+	fmt.Println("Service Utilisateur => Starting...")
+	UTILISATEUR_PORT := os.Getenv("UTILISATEUR_PORT")
+	if UTILISATEUR_PORT == "" {
+		UTILISATEUR_PORT = "50052"
+		fmt.Println("Service Produit => UTILISATEUR_PORT variable not found, 50052 used")
+	}
 	lis, err := net.Listen("tcp", "0.0.0.0:50052")
 	if err != nil {
 		log.Fatalf("Error while creating listener : %v", err)
 	}
+	fmt.Println("Service Utilisateur => HTTP Server OK")
 
 	utilisateurServer := &server{
 		db: database.NewMongoConnection(),
@@ -119,8 +127,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to connect to db : %v", err)
 	}
+	fmt.Println("Service Utilisateur => Database connection OK")
+
 	gRPCServer := grpc.NewServer()
 	utilisateurpb.RegisterServiceUtilisateurServer(gRPCServer, utilisateurServer)
+	fmt.Println("Service Utilisateur => GRPC Server OK")
+	fmt.Println("Service Utilisateur => Startup complete, listen on port ", UTILISATEUR_PORT)
 
 	if err := gRPCServer.Serve(lis); err != nil {
 		log.Fatalf("Error while serving : %v", err)

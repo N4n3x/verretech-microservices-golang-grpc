@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"verretech-microservices/database"
 	"verretech-microservices/produit/documents"
 	"verretech-microservices/produit/produitpb"
@@ -135,11 +136,17 @@ func (server *server) DeleteProduit(ctx context.Context, req *produitpb.ProduitB
 }
 
 func main() {
-	lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	fmt.Println("Service Produit => Starting...")
+	PRODUIT_PORT := os.Getenv("PRODUIT_PORT")
+	if PRODUIT_PORT == "" {
+		PRODUIT_PORT = "50051"
+		fmt.Println("Service Produit => PRODUIT_PORT variable not found, 50051 used")
+	}
+	lis, err := net.Listen("tcp", "0.0.0.0:"+PRODUIT_PORT)
 	if err != nil {
 		log.Fatalf("Error while creating listener : %v", err)
 	}
-
+	fmt.Println("Service Produit => HTTP Server OK")
 	produitServer := &server{
 		db: database.NewMongoConnection(),
 	}
@@ -148,10 +155,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to connect to db : %v", err)
 	}
+	fmt.Println("Service Produit => Database connection OK")
 	gRPCServer := grpc.NewServer()
 	produitpb.RegisterServiceProduitServer(gRPCServer, produitServer)
-
+	fmt.Println("Service Produit => GRPC Server OK")
+	fmt.Println("Service Produit => Startup complete, listen on port ", PRODUIT_PORT)
 	if err := gRPCServer.Serve(lis); err != nil {
 		log.Fatalf("Error while serving : %v", err)
 	}
+
 }

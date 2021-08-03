@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 	panierDoc "verretech-microservices/panier/documents"
@@ -41,6 +42,12 @@ func (v Values) Get(key string) string {
 var authenticator auth.Authenticator
 var cache store.Cache
 
+var GATEWAY_PORT string
+var UTILISATEUR_SERV string
+var PRODUIT_SERV string
+var PANIER_SERV string
+var COMMANDE_SERV string
+
 /// AddUtilisateur
 // @return Utilisateur
 func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +55,7 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 	var u utilisateurpb.Utilisateur
 	_ = json.NewDecoder(r.Body).Decode(&u)
 	fmt.Printf("%+v\n", &u)
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
 		json.NewEncoder(w).Encode(err)
@@ -70,7 +77,7 @@ func AddUtilisateur(w http.ResponseWriter, r *http.Request) {
 /// GetUtilisateurs
 // @return []utilisateur
 func GetUtilisateurs(w http.ResponseWriter, r *http.Request) {
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -111,7 +118,7 @@ func UpdateUtilisateur(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	user := r.Context().Value("user").(Values).Get("username")
 
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		///TODO: Gestion erreur
 		fmt.Printf("Unable to connect to server : %v", err)
@@ -199,7 +206,7 @@ func UpdateUtilisateur(w http.ResponseWriter, r *http.Request) {
 func GetProduits(w http.ResponseWriter, r *http.Request) {
 	// vars := mux.Vars(r)
 
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	cc, err := grpc.Dial(PRODUIT_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
 	}
@@ -247,7 +254,7 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["ref"]
 
-	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	cc, err := grpc.Dial(PRODUIT_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
 	}
@@ -276,7 +283,7 @@ func GetPanier(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(Values).Get("username")
 	fmt.Printf("USER: %+v\n", user)
 
-	cu, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -293,7 +300,7 @@ func GetPanier(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	cc, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	cc, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -316,7 +323,7 @@ func GetPanier(w http.ResponseWriter, r *http.Request) {
 func UpdatePanier(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	user := r.Context().Value("user").(Values).Get("username")
-	cu, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -332,7 +339,7 @@ func UpdatePanier(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cc, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	cc, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -399,7 +406,7 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 	tokenStrategy := authenticator.Strategy(bearer.CachedStrategyKey)
 	auth.Append(tokenStrategy, token, user, r)
 
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
 	}
@@ -443,7 +450,7 @@ func setupGoGuardian() {
 
 func validateUser(ctx context.Context, r *http.Request, userName, password string) (auth.Info, error) {
 	///TODO: connect to Utilisateur Service
-	cc, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Unable to connect to server : %v", err)
 	}
@@ -482,11 +489,6 @@ func authMiddleware(next http.Handler) http.HandlerFunc {
 			"username": user.UserName(),
 		}}
 
-		// c := context.Background()
-		// c2 := context.WithValue(c, "myvalues", v)
-
-		// fmt.Println(c2.Value("myvalues").(Values).Get("2"))
-		// usr := Values{}
 		ctx := context.WithValue(r.Context(), "user", v)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
@@ -507,10 +509,37 @@ func handleRequests() {
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("PUT")
 	///TODO: GetPointsRetrait
 	myRouter.Use(loggingMiddleware)
-	log.Fatal(http.ListenAndServe(":10000", myRouter))
+	fmt.Println("Gateway => startup complete, listen on port ", GATEWAY_PORT)
+	log.Fatal(http.ListenAndServe(":"+GATEWAY_PORT, myRouter))
 }
 
 func main() {
+	fmt.Println("Gateway => Starting...")
+	GATEWAY_PORT = os.Getenv("GATEWAY_PORT")
+	if GATEWAY_PORT == "" {
+		GATEWAY_PORT = "10000"
+		fmt.Println("Gateway => GATEWAY_PORT variable not found, 10000 used")
+	}
+	PRODUIT_SERV = os.Getenv("PRODUIT_SERV")
+	if PRODUIT_SERV == "" {
+		PRODUIT_SERV = "localhost:50051"
+		fmt.Println("Gateway => PRODUIT_SERV variable not found, localhost:50051 used")
+	}
+	UTILISATEUR_SERV = os.Getenv("UTILISATEUR_SERV")
+	if UTILISATEUR_SERV == "" {
+		UTILISATEUR_SERV = "localhost:50052"
+		fmt.Println("Gateway => UTILISATEUR_SERV variable not found, localhost:50052 used")
+	}
+	PANIER_SERV = os.Getenv("PANIER_SERV")
+	if PANIER_SERV == "" {
+		PANIER_SERV = "localhost:50053"
+		fmt.Println("Gateway => PANIER_SERV variable not found, localhost:50053 used")
+	}
+	COMMANDE_SERV = os.Getenv("COMMANDE_SERV")
+	if COMMANDE_SERV == "" {
+		COMMANDE_SERV = "localhost:50054"
+		fmt.Println("Gateway => COMMANDE_SERV variable not found, localhost:50054 used")
+	}
 	setupGoGuardian()
 	handleRequests()
 }
