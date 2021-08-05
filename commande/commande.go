@@ -1,22 +1,77 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"verretech-microservices/commande/commandepb"
+	"verretech-microservices/commande/documents"
 	"verretech-microservices/database"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc"
 )
 
 type server struct {
 	db *database.Mongo
-	commandepb.UnimplementedServicePanierServer
+	commandepb.UnimplementedServiceCommandeServer
 }
 
 var COMMANDE_PORT string
+
+func (server *server) Valid(ctx context.Context, panierReq *commandepb.PanierRequest) (*commandepb.CommandeResponse, error) {
+	panier := panierReq.Panier
+	commande := &documents.Commande{
+		Panier: panier,
+	}
+	commande.Valided(*server.db.Database)
+	commandePB := commande.ToCommandePB()
+	return &commandepb.CommandeResponse{
+		Commande: commandePB,
+	}, nil
+}
+
+func (server *server) Confirm(ctx context.Context, commandeReq *commandepb.CommandeRequest) (*commandepb.CommandeResponse, error) {
+	commande, err := documents.FromCommandePB(commandeReq.Commande)
+	if err != nil {
+		return nil, err
+	}
+	commande.Confirmed(*server.db.Database)
+	commandePB := commande.ToCommandePB()
+	return &commandepb.CommandeResponse{
+		Commande: commandePB,
+	}, nil
+}
+
+func (server *server) Cancel(ctx context.Context, commandeReq *commandepb.CommandeRequest) (*commandepb.CommandeResponse, error) {
+	commande, err := documents.FromCommandePB(commandeReq.Commande)
+	if err != nil {
+		return nil, err
+	}
+	commande.Canceled(*server.db.Database)
+	commandePB := commande.ToCommandePB()
+	return &commandepb.CommandeResponse{
+		Commande: commandePB,
+	}, nil
+}
+
+func (server *server) GetUserCommandes(ctx context.Context, req *commandepb.ByUtilisateurRequest) (*commandepb.CommandesResponse, error) {
+	///TODO
+	idUtilisateur, err := primitive.ObjectIDFromHex(req.UtilisateurID)
+	if err != nil {
+		return nil, err
+	}
+	commandes, err := documents.FindByUserID(*server.db.Database, ctx, idUtilisateur)
+	commandespb := []*commandepb.Commande{}
+	for _, commande := range commandes {
+		commandespb = append(commandespb, commande.ToCommandePB())
+	}
+	return &commandepb.CommandesResponse{
+		Commandes: commandespb,
+	}, nil
+}
 
 func main() {
 	COMMANDE_PORT = os.Getenv("COMMANDE_PORT")

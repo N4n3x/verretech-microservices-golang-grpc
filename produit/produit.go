@@ -41,7 +41,7 @@ func (server *server) GetAllProduits(ctx context.Context, req *produitpb.GetAllP
 	}
 	var produits []documents.Produit
 	if err = p.All(ctx, &produits); err != nil {
-		log.Fatal(err)
+		log.Fatal(err) /// à changer
 	}
 	var response produitpb.ListProduits
 	for _, pr := range produits {

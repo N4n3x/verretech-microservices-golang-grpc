@@ -6,16 +6,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	documents_erp "verretech-microservices/erp/documents"
+	"verretech-microservices/erp/erppb"
 	"verretech-microservices/produit/produitpb"
 
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 )
 
-var ERP_PORT string
+type server struct {
+	erppb.UnimplementedServiceERPServer
+}
+
+var ERP_API_PORT string
+var ERP_GRPC_PORT string
 var PRODUIT_SERV string
 var API_KEY string
 
@@ -66,16 +73,29 @@ func UpdateProduits(w http.ResponseWriter, r *http.Request) {
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/updateProduits", UpdateProduits)
-	fmt.Println("ERP Connector => startup complete, listen on port ", ERP_PORT)
-	log.Fatal(http.ListenAndServe(":"+ERP_PORT, myRouter))
+	// fmt.Println("ERP Connector => startup complete, listen on port ", ERP_API_PORT)
+	log.Fatal(http.ListenAndServe(":"+ERP_API_PORT, myRouter))
+}
+
+func (server *server) ConfirmERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+	return &erppb.CommandeResponse{}, nil
+}
+
+func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+	return &erppb.CommandeResponse{}, nil
 }
 
 func main() {
 	fmt.Println("ERP Connector => Starting...")
-	ERP_PORT = os.Getenv("ERP_PORT")
-	if ERP_PORT == "" {
-		ERP_PORT = "50050"
-		fmt.Println("ERP Connector => ERP_PORT variable not found, 50050 used")
+	ERP_API_PORT = os.Getenv("ERP_API_PORT")
+	if ERP_API_PORT == "" {
+		ERP_API_PORT = "50050"
+		fmt.Println("ERP Connector => ERP_API_PORT variable not found, 50050 used")
+	}
+	ERP_GRPC_PORT = os.Getenv("ERP_GRPC_PORT")
+	if ERP_GRPC_PORT == "" {
+		ERP_GRPC_PORT = "50055"
+		fmt.Println("ERP Connector => ERP_GRPC_PORT variable not found, 50055 used")
 	}
 	PRODUIT_SERV = os.Getenv("PRODUIT_SERV")
 	if PRODUIT_SERV == "" {
@@ -86,50 +106,18 @@ func main() {
 	if API_KEY == "" {
 		log.Fatal("ERP Connector => API_KEY variable not found")
 	}
+	lis, err := net.Listen("tcp", "0.0.0.0:"+ERP_GRPC_PORT)
+	if err != nil {
+		log.Fatalf("Error while creating listener : %v", err)
+	}
+	fmt.Println("ERP Connector => HTTP Server OK")
+	erpServer := &server{}
+	gRPCServer := grpc.NewServer()
+	erppb.RegisterServiceERPServer(gRPCServer, erpServer)
+	fmt.Println("ERP Connector => GRPC Server OK")
+	fmt.Println("ERP Connector => Startup complete, listen on port ", ERP_API_PORT, " and ", ERP_GRPC_PORT)
+	if err := gRPCServer.Serve(lis); err != nil {
+		log.Fatalf("Error while serving : %v", err)
+	}
 	handleRequests()
 }
-
-// func updateProduct() {
-// 	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-// 	if err != nil {
-// 		log.Fatalf("Unable to connect to server : %v", err)
-// 	}
-// 	produitClient := produitpb.NewServiceProduitClient(cc)
-
-// 	// p1 := &produitpb.Photo{Url: "http://localhost/images/1"}
-// 	// p2 := &produitpb.Photo{Url: "http://localhost/images/2"}
-// 	// var p []*produitpb.Photo
-// 	// p = append(p, p1, p2)
-
-// 	// l1 := &localisationpb.Localisation{Adresse: "1 rue du pont", Ville: "ROUEN", Cp: "76000"}
-// 	// l2 := &localisationpb.Localisation{Adresse: "24 rue Victor Hugo", Ville: "ROUEN", Cp: "76000"}
-// 	// pr1 := &pointRetraitpb.PointRetrait{Nom: "PONT 1", Localisation: l1}
-// 	// pr2 := &pointRetraitpb.PointRetrait{Nom: "HUGO 24", Localisation: l2}
-// 	// s1 := &produitpb.Stock{PointRetrait: pr1, Qte: 10}
-// 	// s2 := &produitpb.Stock{PointRetrait: pr2, Qte: 5}
-// 	// var s []*produitpb.Stock
-// 	// s = append(s, s1, s2)
-
-// 	// produit := &produitpb.Produit{
-// 	// 	ID:          "60ae9c57a04348bbf1d50ded",
-// 	// 	Ref:         "Z99999",
-// 	// 	Description: "Un super produit !",
-// 	// 	Prix:        18.99,
-// 	// 	Photos:      p,
-// 	// 	Stocks:      s,
-// 	// 	Tags:        []string{"mat:verre", "cat:sdb"},
-// 	// }
-
-// 	// produitRequest := &produitpb.ProduitRequest{Produit: produit}
-// 	// b := &produitpb.GetAllProduitsRequest{}
-// 	b := &produitpb.ProduitByRefRequest{Ref: "Z99999"}
-// 	// res, err := produitClient.UpdateProduit(context.Background(), produitRequest)
-// 	// res, err := produitClient.GetAllProduits(context.Background(), b)
-// 	// res, err := produitClient.GetProduitByRef(context.Background(), b)
-// 	res, err := produitClient.DeleteProduit(context.Background(), b)
-// 	if err != nil {
-// 		log.Fatalf("Unable to create Product: %v", err)
-// 	}
-
-// 	fmt.Printf("Result: %v\n", res)
-// }

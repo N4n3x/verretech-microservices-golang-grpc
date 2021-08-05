@@ -42,11 +42,16 @@ func (v Values) Get(key string) string {
 var authenticator auth.Authenticator
 var cache store.Cache
 
+//Variables environnements
 var GATEWAY_PORT string
 var UTILISATEUR_SERV string
 var PRODUIT_SERV string
 var PANIER_SERV string
 var COMMANDE_SERV string
+
+///
+//UTILISATEUR
+///
 
 /// AddUtilisateur
 // @return Utilisateur
@@ -198,7 +203,31 @@ func UpdateUtilisateur(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetUtilisateur(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	u, err := infoCurrentUser(r)
+	if err != nil {
+		fmt.Printf("Unable to get Utilisateur: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+	userInfo, err := doc.FromUtilisateurPB(u.Utilisateur)
+	if err != nil {
+		fmt.Printf("Unable to update Utilisateur: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(userInfo)
+}
+
 ///TODO: Delete Utilisateur
+
+///
+//PRODUIT
+///
 
 /// GetProduits
 // @return []produit
@@ -280,20 +309,20 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 func GetPanier(w http.ResponseWriter, r *http.Request) {
 	// vars := mux.Vars(r)
 	// key := vars["utilisateurid"]
-	user := r.Context().Value("user").(Values).Get("username")
-	fmt.Printf("USER: %+v\n", user)
+	// user := r.Context().Value("user").(Values).Get("username")
+	// fmt.Printf("USER: %+v\n", user)
 
-	cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-	}
-	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
-	ur := &utilisateurpb.UtilisateurRequest{
-		Utilisateur: &utilisateurpb.Utilisateur{
-			Mail: user,
-		},
-	}
-	uRep, err := utilisateurClient.GetUtilisateur(context.Background(), ur)
+	// cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
+	// if err != nil {
+	// 	fmt.Printf("Error: %v", err)
+	// }
+	// utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
+	// ur := &utilisateurpb.UtilisateurRequest{
+	// 	Utilisateur: &utilisateurpb.Utilisateur{
+	// 		Mail: user,
+	// 	},
+	// }
+	uRep, err := infoCurrentUser(r)
 	if err != nil {
 		json.NewEncoder(w).Encode("Erreur Utilisateur")
 		return
@@ -365,6 +394,25 @@ func UpdatePanier(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error: %v", err)
 	}
 	json.NewEncoder(w).Encode(panier)
+}
+
+///
+//Utilitaire
+///
+func infoCurrentUser(r *http.Request) (*utilisateurpb.UtilisateurResponse, error) {
+	user := r.Context().Value("user").(Values).Get("username")
+
+	cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
+	ur := &utilisateurpb.UtilisateurRequest{
+		Utilisateur: &utilisateurpb.Utilisateur{
+			Mail: user,
+		},
+	}
+	return utilisateurClient.GetUtilisateur(context.Background(), ur)
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -504,6 +552,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/utilisateur", authMiddleware(http.HandlerFunc(UpdateUtilisateur))).Methods("PUT")
 	myRouter.HandleFunc("/utilisateur", AddUtilisateur).Methods("POST")
 	myRouter.HandleFunc("/utilisateur", authMiddleware(http.HandlerFunc(GetUtilisateurs))).Methods("GET")
+	myRouter.HandleFunc("/utilisateur/info", authMiddleware(http.HandlerFunc(GetUtilisateur))).Methods("GET")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(GetPanier))).Methods("GET")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("POST")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("PUT")

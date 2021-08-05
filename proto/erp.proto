@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package erp;
+option go_package="verretech-microservices/erp/erppb";
+import "proto/commande.proto";
+
+message CommandeRequest {
+    commande.Commande commande = 1;
+}
+
+message CommandeResponse {
+    commande.Commande commande = 1;
+}
+
+service ServiceERP {
+    rpc ValidERP (CommandeRequest) returns (CommandeResponse);
+    rpc ConfirmERP (CommandeRequest) returns (CommandeResponse);
+}

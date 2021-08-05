@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceCommandeClient interface {
-	ValidateCommande(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
-	SubmitCommande(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
-	GetLastCommandes(ctx context.Context, in *LastCommandesRequest, opts ...grpc.CallOption) (*CommandesResponse, error)
+	Valid(ctx context.Context, in *PanierRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
+	Confirm(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
+	Cancel(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
 	GetUserCommandes(ctx context.Context, in *ByUtilisateurRequest, opts ...grpc.CallOption) (*CommandesResponse, error)
 }
 
@@ -32,27 +32,27 @@ func NewServiceCommandeClient(cc grpc.ClientConnInterface) ServiceCommandeClient
 	return &serviceCommandeClient{cc}
 }
 
-func (c *serviceCommandeClient) ValidateCommande(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
+func (c *serviceCommandeClient) Valid(ctx context.Context, in *PanierRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
 	out := new(CommandeResponse)
-	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/ValidateCommande", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/Valid", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serviceCommandeClient) SubmitCommande(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
+func (c *serviceCommandeClient) Confirm(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
 	out := new(CommandeResponse)
-	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/SubmitCommande", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/Confirm", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serviceCommandeClient) GetLastCommandes(ctx context.Context, in *LastCommandesRequest, opts ...grpc.CallOption) (*CommandesResponse, error) {
-	out := new(CommandesResponse)
-	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/GetLastCommandes", in, out, opts...)
+func (c *serviceCommandeClient) Cancel(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
+	out := new(CommandeResponse)
+	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/Cancel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +72,9 @@ func (c *serviceCommandeClient) GetUserCommandes(ctx context.Context, in *ByUtil
 // All implementations must embed UnimplementedServiceCommandeServer
 // for forward compatibility
 type ServiceCommandeServer interface {
-	ValidateCommande(context.Context, *CommandeRequest) (*CommandeResponse, error)
-	SubmitCommande(context.Context, *CommandeRequest) (*CommandeResponse, error)
-	GetLastCommandes(context.Context, *LastCommandesRequest) (*CommandesResponse, error)
+	Valid(context.Context, *PanierRequest) (*CommandeResponse, error)
+	Confirm(context.Context, *CommandeRequest) (*CommandeResponse, error)
+	Cancel(context.Context, *CommandeRequest) (*CommandeResponse, error)
 	GetUserCommandes(context.Context, *ByUtilisateurRequest) (*CommandesResponse, error)
 	mustEmbedUnimplementedServiceCommandeServer()
 }
@@ -83,14 +83,14 @@ type ServiceCommandeServer interface {
 type UnimplementedServiceCommandeServer struct {
 }
 
-func (UnimplementedServiceCommandeServer) ValidateCommande(context.Context, *CommandeRequest) (*CommandeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateCommande not implemented")
+func (UnimplementedServiceCommandeServer) Valid(context.Context, *PanierRequest) (*CommandeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Valid not implemented")
 }
-func (UnimplementedServiceCommandeServer) SubmitCommande(context.Context, *CommandeRequest) (*CommandeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SubmitCommande not implemented")
+func (UnimplementedServiceCommandeServer) Confirm(context.Context, *CommandeRequest) (*CommandeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Confirm not implemented")
 }
-func (UnimplementedServiceCommandeServer) GetLastCommandes(context.Context, *LastCommandesRequest) (*CommandesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLastCommandes not implemented")
+func (UnimplementedServiceCommandeServer) Cancel(context.Context, *CommandeRequest) (*CommandeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Cancel not implemented")
 }
 func (UnimplementedServiceCommandeServer) GetUserCommandes(context.Context, *ByUtilisateurRequest) (*CommandesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserCommandes not implemented")
@@ -108,56 +108,56 @@ func RegisterServiceCommandeServer(s grpc.ServiceRegistrar, srv ServiceCommandeS
 	s.RegisterService(&ServiceCommande_ServiceDesc, srv)
 }
 
-func _ServiceCommande_ValidateCommande_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ServiceCommande_Valid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PanierRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceCommandeServer).Valid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/commande.ServiceCommande/Valid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceCommandeServer).Valid(ctx, req.(*PanierRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ServiceCommande_Confirm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CommandeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceCommandeServer).ValidateCommande(ctx, in)
+		return srv.(ServiceCommandeServer).Confirm(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/commande.ServiceCommande/ValidateCommande",
+		FullMethod: "/commande.ServiceCommande/Confirm",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceCommandeServer).ValidateCommande(ctx, req.(*CommandeRequest))
+		return srv.(ServiceCommandeServer).Confirm(ctx, req.(*CommandeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServiceCommande_SubmitCommande_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ServiceCommande_Cancel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CommandeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceCommandeServer).SubmitCommande(ctx, in)
+		return srv.(ServiceCommandeServer).Cancel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/commande.ServiceCommande/SubmitCommande",
+		FullMethod: "/commande.ServiceCommande/Cancel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceCommandeServer).SubmitCommande(ctx, req.(*CommandeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ServiceCommande_GetLastCommandes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LastCommandesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServiceCommandeServer).GetLastCommandes(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/commande.ServiceCommande/GetLastCommandes",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceCommandeServer).GetLastCommandes(ctx, req.(*LastCommandesRequest))
+		return srv.(ServiceCommandeServer).Cancel(ctx, req.(*CommandeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,16 +188,16 @@ var ServiceCommande_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceCommandeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ValidateCommande",
-			Handler:    _ServiceCommande_ValidateCommande_Handler,
+			MethodName: "Valid",
+			Handler:    _ServiceCommande_Valid_Handler,
 		},
 		{
-			MethodName: "SubmitCommande",
-			Handler:    _ServiceCommande_SubmitCommande_Handler,
+			MethodName: "Confirm",
+			Handler:    _ServiceCommande_Confirm_Handler,
 		},
 		{
-			MethodName: "GetLastCommandes",
-			Handler:    _ServiceCommande_GetLastCommandes_Handler,
+			MethodName: "Cancel",
+			Handler:    _ServiceCommande_Cancel_Handler,
 		},
 		{
 			MethodName: "GetUserCommandes",

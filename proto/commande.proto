@@ -3,17 +3,17 @@ syntax = "proto3";
 package commande;
 option go_package="verretech-microservices/commande/commandepb";
 import "proto/panier.proto";
-import "proto/utilisateur.proto";
 
 message Commande {
-    panier.Panier panier = 1;
-    int64 timestamp = 2;
-    string statut = 3;
-    string ref = 4;
+    string ID = 1;
+    panier.Panier panier = 2;
+    int64 timestamp = 3;
+    string statut = 4;
+    string ref = 5;
 }
 
-message ListCommandes {
-    repeated Commande commandes = 1;
+message PanierRequest {
+    panier.Panier panier = 1;
 }
 
 message CommandeRequest {
@@ -24,19 +24,17 @@ message CommandeResponse {
     Commande commande = 1;
 }
 
-message LastCommandesRequest {}
-
 message CommandesResponse {
-    ListCommandes ListCommandes = 1;
+    repeated Commande commandes = 1;
 }
 
 message ByUtilisateurRequest {
-    utilisateur.Utilisateur utilisateur = 1;
+    string utilisateurID = 1;
 }
 
 service ServiceCommande {
-    rpc ValidateCommande (CommandeRequest) returns (CommandeResponse);
-    rpc SubmitCommande (CommandeRequest) returns (CommandeResponse);
-    rpc GetLastCommandes(LastCommandesRequest) returns (CommandesResponse);
+    rpc Valid (PanierRequest) returns (CommandeResponse);
+    rpc Confirm (CommandeRequest) returns (CommandeResponse);
+    rpc Cancel (CommandeRequest) returns (CommandeResponse);
     rpc GetUserCommandes(ByUtilisateurRequest) returns (CommandesResponse);
 }

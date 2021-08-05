@@ -18,8 +18,8 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Conception des fonctions métiers
 ### Panier (:50053)
 * ✅ Création interface GRPC
-* ⏳ Connexion à la base de données
-* ⏳ Conception des fonctions métiers
+* ✅ Connexion à la base de données
+* ✅ Conception des fonctions métiers
 ### Commande (:50054)
 * ✅ Création interface GRPC
 * ⏳ Connexion à la base de données
@@ -32,7 +32,7 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Référencement des routes
 * ✅ Conception middleware Auth
 * ⏳ Conception middleware Log
-* 🛠 Mise en place du routage
+* ✅ Mise en place du routage
 ### Endpoints Gateway
 * Produit
   * ✅ GET /produit?tag=###
@@ -44,10 +44,9 @@ Architecture micro services en GO pour site e-Commerce
   * ✅ PUT /utilisateur
   * ⏳ DELETE /utilisateur/ID
 * Panier
-  * ⏳ POST /panier
-  * ⏳ GET /panier?params=###
-  * ⏳ GET /panier/ID
-  * ⏳ PUT /panier/ID
+  * ✅ POST /panier
+  * ✅ GET /panier
+  * ✅ PUT /panier/ID
 * Commande
   * ⏳ POST /commande
   * ⏳ GET /commande?params=###
