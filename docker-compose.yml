@@ -4,35 +4,29 @@ services:
   produit:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/produit/install/Dockerfile
-    # dockerfile: /produit/install/Dockerfile   // Pour le local
+     dockerfile: /produit/install/Dockerfile   // Pour le local
 
   utilisateur:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/utilisateur/install/Dockerfile
-   # dockerfile: /utulisateur/install/Dockerfile   // Pour le local
+    dockerfile: /utulisateur/install/Dockerfile   // Pour le local
 
   gateway:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/gateway/install/Dockerfile
-    # dockerfile: /gateway/install/Dockerfile   // Pour le local
+     dockerfile: /gateway/install/Dockerfile   // Pour le local
   
   erp:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/erp/install/Dockerfile
-    # dockerfile: /erp/install/Dockerfile   // Pour le local
+    dockerfile: /erp/install/Dockerfile   // Pour le local
 
   commande:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/commande/install/Dockerfile
-    # dockerfile: /commande/install/Dockerfile   // Pour le local
+     dockerfile: /commande/install/Dockerfile   // Pour le local
   
   panier:
     build:
       context: .
-      dockerfile: /home/ubuntu/verretech-microservices/panier/install/Dockerfile
-    # dockerfile: /panier/install/Dockerfile   // Pour le local
+     dockerfile: /panier/install/Dockerfile   // Pour le local
