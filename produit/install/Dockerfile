@@ -1,21 +1,18 @@
-
 FROM golang:latest
-RUN mkdir -p /go/src/verretech-microservices/install
-RUN CGO_ENABLED=0
-
-ADD . /go/src/verretech-microservices/install
-ENV GOPATH /go
-WORKDIR /go/src/verretech-microservices
-
-
-
-FROM alpine
-RUN apk update
-RUN apk add curl
-
-RUN mkdir -p /app
-COPY  . /app/
-RUN chmod +x /app
+RUN mkdir /app
+ADD . /app
 WORKDIR /app
-EXPOSE 5001
-ENTRYPOINT ["/app/api"]
+
+#telechargement des dépendances
+COPY go.mod ./
+COPY go.sum ./
+RUN  go mod download
+
+#Copie de l'executable
+COPY /produit/produit.go ./
+RUN go build -o main .
+
+CMD ["/app/main"]
+
+
+

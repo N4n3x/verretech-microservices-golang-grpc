@@ -9,7 +9,7 @@ COPY go.sum ./
 RUN  go mod download
 
 #Copie de l'executable
-COPY /panier/panier.go ./
+COPY /erp/erp.go ./
 RUN go build -o main .
 
 CMD ["/app/main"]

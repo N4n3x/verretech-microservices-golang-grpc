@@ -12,4 +12,10 @@ RUN go build -o ./gateway ./gateway
 
 EXPOSE 10000
 
-CMD [ "/gateway" ]
+CMD [ "/gateway" ]ay/gateway.go ./
+RUN go build -o main .
+
+CMD ["/app/main"]
+
+
+
