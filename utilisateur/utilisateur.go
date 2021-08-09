@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -10,6 +11,7 @@ import (
 	"verretech-microservices/utilisateur/documents"
 	"verretech-microservices/utilisateur/utilisateurpb"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -55,7 +57,18 @@ func (server *server) GetUtilisateurs(ctx context.Context, req *utilisateurpb.Ut
 
 func (server *server) GetUtilisateur(ctx context.Context, req *utilisateurpb.UtilisateurRequest) (*utilisateurpb.UtilisateurResponse, error) {
 	var utilisateur documents.Utilisateur
-	utilisateur.Mail = &req.Utilisateur.Mail
+	if req.Utilisateur.ID != "" {
+		oid, err := primitive.ObjectIDFromHex(req.Utilisateur.ID)
+		if err != nil {
+			return nil, err
+		}
+		utilisateur.ID = &oid
+	} else if req.Utilisateur.Mail != "" {
+		utilisateur.Mail = &req.Utilisateur.Mail
+	} else {
+		err := errors.New("Utilisateur incomplet")
+		return nil, err
+	}
 	err := utilisateur.FindOne(*server.db.Database)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))

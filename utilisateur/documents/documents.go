@@ -2,6 +2,7 @@ package documents
 
 import (
 	"context"
+	"errors"
 
 	"verretech-microservices/utilisateur/utilisateurpb"
 
@@ -56,10 +57,19 @@ func (utilisateur *Utilisateur) InsertOne(db mongo.Database) (primitive.ObjectID
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-// FindOne  un Utilisateur à partir de ça propriété Mail, ou
+// FindOne  retourne un Utilisateur à partir de ça propriété Mail, ou ID
 func (utilisateur *Utilisateur) FindOne(db mongo.Database) error {
 	collection := db.Collection(utilisateurCollection)
-	filter := bson.M{"mail": utilisateur.Mail}
+	var filter bson.M
+	if utilisateur.ID != &primitive.NilObjectID {
+		filter = bson.M{"_id": utilisateur.ID}
+
+	} else if utilisateur.Mail != nil {
+		filter = bson.M{"mail": utilisateur.Mail}
+
+	} else {
+		return errors.New("Utilisateur erreur, pas de filtre")
+	}
 
 	err := collection.FindOne(context.Background(), filter).Decode(utilisateur)
 	if err != nil {

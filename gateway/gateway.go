@@ -307,21 +307,6 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 //PANIER
 ///
 func GetPanier(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// key := vars["utilisateurid"]
-	// user := r.Context().Value("user").(Values).Get("username")
-	// fmt.Printf("USER: %+v\n", user)
-
-	// cu, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
-	// if err != nil {
-	// 	fmt.Printf("Error: %v", err)
-	// }
-	// utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cu)
-	// ur := &utilisateurpb.UtilisateurRequest{
-	// 	Utilisateur: &utilisateurpb.Utilisateur{
-	// 		Mail: user,
-	// 	},
-	// }
 	uRep, err := infoCurrentUser(r)
 	if err != nil {
 		json.NewEncoder(w).Encode("Erreur Utilisateur")
