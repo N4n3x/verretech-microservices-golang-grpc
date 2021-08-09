@@ -4,29 +4,29 @@ services:
   produit:
     build:
       context: .
-     dockerfile: /produit/install/Dockerfile   // Pour le local
+      dockerfile: /produit/install/Dockerfile   // Pour le local
 
   utilisateur:
     build:
       context: .
-    dockerfile: /utulisateur/install/Dockerfile   // Pour le local
+      dockerfile: /utulisateur/install/Dockerfile   // Pour le local
 
   gateway:
     build:
       context: .
-     dockerfile: /gateway/install/Dockerfile   // Pour le local
+      dockerfile: /gateway/install/Dockerfile   // Pour le local
   
   erp:
     build:
       context: .
-    dockerfile: /erp/install/Dockerfile   // Pour le local
+      dockerfile: /erp/install/Dockerfile   // Pour le local
 
   commande:
     build:
       context: .
-     dockerfile: /commande/install/Dockerfile   // Pour le local
+      dockerfile: /commande/install/Dockerfile   // Pour le local
   
   panier:
     build:
       context: .
-     dockerfile: /panier/install/Dockerfile   // Pour le local
+      dockerfile: /panier/install/Dockerfile   // Pour le local
