@@ -9,7 +9,7 @@ type server struct {
 	db *database.Mongo
 }
 
-func testFindOne(t *testing.T) {
+func TestFindOne(t *testing.T) {
 	produitServer := &server{
 		db: database.NewMongoConnection(),
 	}
