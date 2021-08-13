@@ -9,25 +9,39 @@
 			"name": "Produit",
 			"item": [
 				{
-					"name": "ProduitsByTag",
+					"name": "ByTag",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:10000/produitByTag?tag=PdT",
+							"raw": "http://localhost:10000/produit",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "10000",
 							"path": [
-								"produitByTag"
+								"produit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ByRef",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:10000/produit/A0001",
+							"protocol": "http",
+							"host": [
+								"localhost"
 							],
-							"query": [
-								{
-									"key": "tag",
-									"value": "PdT"
-								}
+							"port": "10000",
+							"path": [
+								"produit",
+								"A0001"
 							]
 						}
 					},
@@ -39,14 +53,43 @@
 			"name": "Utilisateur",
 			"item": [
 				{
-					"name": "Utilisateur",
+					"name": "All",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "3de06b16-09fe-4d45-aae6-4ca1e784d600",
+									"value": "e024ec97-ae03-4e40-a5fe-65d742316411",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:10000/utilisateur",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10000",
+							"path": [
+								"utilisateur"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InfoCurrentUser",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "08102ec8-9d52-40c9-8837-78b219c51e8c",
 									"type": "string"
 								}
 							]
@@ -70,11 +113,21 @@
 				{
 					"name": "Utilisateur",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "191da6b3-d16d-4a5d-8ee3-03346643dfb9",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nom\": \"Hernandez\",\r\n    \"prenom\": \"Alexandre\",\r\n    \"mail\": \"alex.hern@mail.com\",\r\n    \"hashMotDePasse\": \"motdepasse\"\r\n}",
+							"raw": "{\r\n    \"nom\": \"Hernandez\",\r\n    \"prenom\": \"Alex\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -167,7 +220,113 @@
 		},
 		{
 			"name": "Panier",
-			"item": []
+			"item": [
+				{
+					"name": "UpsertByUserAuth",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n[\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324afd\",\r\n        \"qte\": 12\r\n    },\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324b00\",\r\n        \"qte\": 55\r\n    }\r\n]\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10000/panier",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10000",
+							"path": [
+								"panier"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateByUserAuth",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n[\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324afd\",\r\n        \"qte\": 13\r\n    },\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324b00\",\r\n        \"qte\": 55\r\n    }\r\n]\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10000/panier",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10000",
+							"path": [
+								"panier"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ByUserAuth",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:10000/panier",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10000",
+							"path": [
+								"panier"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "ERP",
@@ -237,6 +396,10 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Commande",
+			"item": []
 		}
 	],
 	"auth": {
