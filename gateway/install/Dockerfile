@@ -9,7 +9,7 @@ COPY go.sum ./
 RUN  go mod download
 
 #Copie de l'executable
-COPY /produit/produit.go ./
+COPY /gateway/gateway.go ./
 RUN go build -o main .
 
 CMD ["/app/main"]
