@@ -109,7 +109,9 @@ func main() {
 	}
 	API_KEY = os.Getenv("API_KEY")
 	if API_KEY == "" {
-		log.Fatal("ERP Connector => API_KEY variable not found")
+		API_KEY = "keyCKETjZguzbEMJs"
+		fmt.Println("ERP Connector => API_KEY variable not found, default used")
+		// log.Fatal("ERP Connector => API_KEY variable not found")
 	}
 	lis, err := net.Listen("tcp", "0.0.0.0:"+ERP_GRPC_PORT)
 	if err != nil {
