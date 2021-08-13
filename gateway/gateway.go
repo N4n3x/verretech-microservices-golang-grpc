@@ -615,23 +615,23 @@ func main() {
 	}
 	PRODUIT_SERV = os.Getenv("PRODUIT_SERV")
 	if PRODUIT_SERV == "" {
-		PRODUIT_SERV = "localhost:50051"
-		fmt.Println("Gateway => PRODUIT_SERV variable not found, localhost:50051 used")
+		PRODUIT_SERV = "produit:50051"
+		fmt.Println("Gateway => PRODUIT_SERV variable not found, produit:50051 used")
 	}
 	UTILISATEUR_SERV = os.Getenv("UTILISATEUR_SERV")
 	if UTILISATEUR_SERV == "" {
-		UTILISATEUR_SERV = "localhost:50052"
-		fmt.Println("Gateway => UTILISATEUR_SERV variable not found, localhost:50052 used")
+		UTILISATEUR_SERV = "utilisateur:50052"
+		fmt.Println("Gateway => UTILISATEUR_SERV variable not found, utilisateur:50052 used")
 	}
 	PANIER_SERV = os.Getenv("PANIER_SERV")
 	if PANIER_SERV == "" {
-		PANIER_SERV = "localhost:50053"
-		fmt.Println("Gateway => PANIER_SERV variable not found, localhost:50053 used")
+		PANIER_SERV = "panier:50053"
+		fmt.Println("Gateway => PANIER_SERV variable not found, panier:50053 used")
 	}
 	COMMANDE_SERV = os.Getenv("COMMANDE_SERV")
 	if COMMANDE_SERV == "" {
-		COMMANDE_SERV = "localhost:50054"
-		fmt.Println("Gateway => COMMANDE_SERV variable not found, localhost:50054 used")
+		COMMANDE_SERV = "commande:50054"
+		fmt.Println("Gateway => COMMANDE_SERV variable not found, commande:50054 used")
 	}
 	setupGoGuardian()
 	handleRequests()

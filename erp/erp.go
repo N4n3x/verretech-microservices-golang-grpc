@@ -104,8 +104,8 @@ func main() {
 	}
 	PRODUIT_SERV = os.Getenv("PRODUIT_SERV")
 	if PRODUIT_SERV == "" {
-		PRODUIT_SERV = "localhost:50051"
-		fmt.Println("ERP Connector => PRODUIT_SERV variable not found, localhost:50051 used")
+		PRODUIT_SERV = "produit:50051"
+		fmt.Println("ERP Connector => PRODUIT_SERV variable not found, produit:50051 used")
 	}
 	API_KEY = os.Getenv("API_KEY")
 	if API_KEY == "" {
