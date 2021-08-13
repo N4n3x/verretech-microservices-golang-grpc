@@ -61,7 +61,7 @@ func (utilisateur *Utilisateur) InsertOne(db mongo.Database) (primitive.ObjectID
 func (utilisateur *Utilisateur) FindOne(db mongo.Database) error {
 	collection := db.Collection(utilisateurCollection)
 	var filter bson.M
-	if utilisateur.ID != &primitive.NilObjectID {
+	if utilisateur.ID != nil && utilisateur.ID != &primitive.NilObjectID {
 		filter = bson.M{"_id": utilisateur.ID}
 
 	} else if utilisateur.Mail != nil {

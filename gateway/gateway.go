@@ -486,7 +486,7 @@ func createToken(w http.ResponseWriter, r *http.Request) {
 	token := uuid.New().String()
 	user, err := authenticator.Authenticate(r)
 	if err != nil {
-		fmt.Printf("Auth: %+v\n", err)
+		fmt.Printf("AUTH: %+v\n", err)
 		code := http.StatusUnauthorized
 		http.Error(w, http.StatusText(code), code)
 		return
@@ -541,7 +541,7 @@ func validateUser(ctx context.Context, r *http.Request, userName, password strin
 	///TODO: connect to Utilisateur Service
 	cc, err := grpc.Dial(UTILISATEUR_SERV, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Unable to connect to server : %v", err)
+		fmt.Printf("Unable to connect to server : %v", err)
 	}
 	utilisateurClient := utilisateurpb.NewServiceUtilisateurClient(cc)
 	body := &utilisateurpb.UtilisateurRequest{
@@ -551,6 +551,8 @@ func validateUser(ctx context.Context, r *http.Request, userName, password strin
 		},
 	}
 	res, err := utilisateurClient.Auth(context.Background(), body)
+	fmt.Printf("1=========>>> : %v\n", res)
+	fmt.Printf("2=========>>> : %v\n", err)
 	if err != nil {
 		return nil, fmt.Errorf("Invalid credentials")
 	}
@@ -559,7 +561,7 @@ func validateUser(ctx context.Context, r *http.Request, userName, password strin
 		return auth.NewDefaultUser(res.Utilisateur.Mail, res.Utilisateur.ID, nil, nil), nil
 	}
 
-	return nil, fmt.Errorf("Invalid credentials")
+	return nil, fmt.Errorf("Invalid credentials %v", res)
 }
 
 func authMiddleware(next http.Handler) http.HandlerFunc {

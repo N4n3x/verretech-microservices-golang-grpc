@@ -97,11 +97,13 @@ func (server *server) Auth(ctx context.Context, req *utilisateurpb.UtilisateurRe
 	var utilisateur documents.Utilisateur
 	utilisateur.Mail = &req.Utilisateur.Mail
 	err := utilisateur.FindOne(*server.db.Database)
+	fmt.Printf("3=========>>> : %v\n", err)
+	fmt.Printf("4=========>>> : %v\n", utilisateur)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("Unable to process request: %v", err))
 	}
-
-	if CheckPasswordHash(req.Utilisateur.HashMotDePasse, *utilisateur.HashMotDePasse) {
+	h := *utilisateur.HashMotDePasse
+	if CheckPasswordHash(req.Utilisateur.HashMotDePasse, h) {
 		response.State = true
 		response.Utilisateur = utilisateur.ToUtilisateurPB()
 	}
