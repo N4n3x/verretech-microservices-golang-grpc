@@ -77,11 +77,16 @@ func handleRequests() {
 	log.Fatal(http.ListenAndServe(":"+ERP_API_PORT, myRouter))
 }
 
-func (server *server) ConfirmERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+	// récupérer les info utilisateur commande.panier.utilisateurID
+	// pour chaque produit
+	// requéter Airtable avec comme filtre la ref du produit
+
 	return &erppb.CommandeResponse{}, nil
 }
 
-func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+func (server *server) ConfirmERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
+
 	return &erppb.CommandeResponse{}, nil
 }
 

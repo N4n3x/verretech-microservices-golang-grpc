@@ -1,32 +1,61 @@
 version: '3.0'
 
 services:
-  produit:
-    build:
-      context: .
-      dockerfile: ./produit/install/Dockerfile   
-
-  utilisateur:
-    build:
-      context: .
-      dockerfile: ./utilisateur/install/Dockerfile   
-
   gateway:
     build:
       context: .
       dockerfile: ./gateway/install/Dockerfile  
-  
-  erp:
+    ports:
+      - "10000:10000"
+    networks: 
+      - verretech
+
+  produit:
     build:
       context: .
-      dockerfile: ./erp/install/Dockerfile   
+      dockerfile: ./produit/install/Dockerfile
+    ports:
+      - "50051:50051" 
+    networks: 
+      - verretech  
+
+  utilisateur:
+    build:
+      context: .
+      dockerfile: ./utilisateur/install/Dockerfile
+    ports:
+      - "50052:50052"
+    networks: 
+      - verretech 
+
+  panier:
+    build:
+      context: .
+      dockerfile: ./panier/install/Dockerfile
+    ports:
+      - "50053:50053"
+    networks: 
+      - verretech
 
   commande:
     build:
       context: .
       dockerfile: ./commande/install/Dockerfile 
-  
-  panier:
+    ports:
+      - "50054:50054"
+    networks: 
+      - verretech
+
+  erp:
     build:
       context: .
-      dockerfile: ./panier/install/Dockerfile   
+      dockerfile: ./erp/install/Dockerfile    
+    ports:
+      - "50050:50050"
+      - "50055:50055"
+    networks: 
+      - verretech
+
+networks: 
+  verretech:
+    driver: bridge

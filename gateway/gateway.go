@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"time"
+	"verretech-microservices/commande/commandepb"
+	commandeDoc "verretech-microservices/commande/documents"
 	panierDoc "verretech-microservices/panier/documents"
 	"verretech-microservices/panier/panierpb"
 	"verretech-microservices/produit/documents"
@@ -307,13 +309,12 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 //PANIER
 ///
 func GetPanier(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	uRep, err := infoCurrentUser(r)
 	if err != nil {
 		json.NewEncoder(w).Encode("Erreur Utilisateur")
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	cc, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
@@ -379,6 +380,61 @@ func UpdatePanier(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error: %v", err)
 	}
 	json.NewEncoder(w).Encode(panier)
+}
+
+///
+//Commande
+///
+func ValidCommande(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	// Va chercher le panier
+	uRep, err := infoCurrentUser(r)
+	if err != nil {
+		json.NewEncoder(w).Encode("Erreur Utilisateur")
+		return
+	}
+	cc, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	panierClient := panierpb.NewServicePanierClient(cc)
+
+	b := &panierpb.ByUtilisateurRequest{
+		UtilisateurID: uRep.Utilisateur.ID,
+	}
+	res, err := panierClient.GetPanier(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+
+	// le Valide
+	con, err := grpc.Dial(COMMANDE_SERV, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	commandeClient := commandepb.NewServiceCommandeClient(con)
+	p := &commandepb.PanierRequest{
+		Panier: res.Panier,
+	}
+	result, err := commandeClient.Valid(context.Background(), p)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+
+	// retourne une commande
+	cmd, err := commandeDoc.FromCommandePB(result.Commande)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	json.NewEncoder(w).Encode(cmd)
+}
+
+func ConfirmCommande(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func CancelCommande(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 }
 
 ///
@@ -541,6 +597,9 @@ func handleRequests() {
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(GetPanier))).Methods("GET")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("POST")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("PUT")
+	myRouter.HandleFunc("/commande/validation", authMiddleware(http.HandlerFunc(ValidCommande))).Methods("GET")
+	myRouter.HandleFunc("/commande/confirmation", authMiddleware(http.HandlerFunc(ConfirmCommande))).Methods("GET")
+	myRouter.HandleFunc("/commande/annulation", authMiddleware(http.HandlerFunc(CancelCommande))).Methods("GET")
 	///TODO: GetPointsRetrait
 	myRouter.Use(loggingMiddleware)
 	fmt.Println("Gateway => startup complete, listen on port ", GATEWAY_PORT)
