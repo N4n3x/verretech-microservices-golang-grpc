@@ -1,0 +1,1 @@
+Template Vuexy à reprendre dans le cadre d'un nouveau projet vue.

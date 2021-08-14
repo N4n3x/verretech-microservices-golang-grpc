@@ -1,0 +1,85 @@
+Jun 09, 2021 3:50:07 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://localhost:22214
+API endpoint: http://localhost:8080
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=localhost:8080
+
+Dev App Server is now running.
+
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /7.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /69.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /70.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /71.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /72.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /42.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /73.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /74.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /76.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /77.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /78.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /8.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /43.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /80.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /81.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /82.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /83.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /84.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /85.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /86.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /87.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /88.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /89.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /9.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /90.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /91.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /92.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /93.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /94.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /47.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /95.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /5.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /63.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /75.js
+Jun 09, 2021 3:50:08 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /79.js
