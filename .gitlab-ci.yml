@@ -20,10 +20,37 @@ before_script:
 stages:
   - build
 
-testUnit:
+testProduit:
   stage: build
   script:
     - cd ./produit 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
+
+testPanier:
+  stage: build
+  script:
+    - cd ./panier 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
+
+testGateway:
+  stage: build
+  script:
+    - cd ./gateway 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
+
+testErp:
+  stage: build
+  script:
+    - cd ./erp 
     - go test
   artifacts:
     paths:
