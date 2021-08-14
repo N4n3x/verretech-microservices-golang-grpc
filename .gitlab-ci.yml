@@ -24,7 +24,7 @@ testUnit:
   stage: build
   script:
     - cd ./produit 
-    - go produit_test.go
+    - go test
   artifacts:
     paths:
       - mybinary
