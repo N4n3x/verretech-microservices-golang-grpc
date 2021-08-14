@@ -20,11 +20,13 @@ before_script:
 stages:
   - build
 
-format:
-stage: test
-script:
-  - cd ./produit
-  - go test
+testUnit:
+  stage: build
+  script:
+    - cd ./produit go test
+  artifacts:
+    paths:
+      - mybinary
 
 compile:
   stage: build
