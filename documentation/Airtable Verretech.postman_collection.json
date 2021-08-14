@@ -11,10 +11,13 @@
 				{
 					"name": "ByTag",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:10000/produit",
+							"raw": "http://localhost:10000/produit?tag=Cuisine",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -22,6 +25,12 @@
 							"port": "10000",
 							"path": [
 								"produit"
+							],
+							"query": [
+								{
+									"key": "tag",
+									"value": "Cuisine"
+								}
 							]
 						}
 					},
@@ -30,6 +39,9 @@
 				{
 					"name": "ByRef",
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -55,16 +67,6 @@
 				{
 					"name": "All",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "e024ec97-ae03-4e40-a5fe-65d742316411",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -84,27 +86,18 @@
 				{
 					"name": "InfoCurrentUser",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "08102ec8-9d52-40c9-8837-78b219c51e8c",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:10000/utilisateur",
+							"raw": "http://localhost:10000/utilisateur/info",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "10000",
 							"path": [
-								"utilisateur"
+								"utilisateur",
+								"info"
 							]
 						}
 					},
@@ -113,21 +106,11 @@
 				{
 					"name": "Utilisateur",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "191da6b3-d16d-4a5d-8ee3-03346643dfb9",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nom\": \"Hernandez\",\r\n    \"prenom\": \"Alex\"\r\n}",
+							"raw": "{\r\n    \"nom\": \"Hernandez\",\r\n    \"prenom\": \"Alex\",\r\n    \"mail\": \"un@mail.com\",\r\n    \"hashMotDePasse\": \"motdepasse\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -189,7 +172,7 @@
 							"basic": [
 								{
 									"key": "username",
-									"value": "alex.hern@mail.com",
+									"value": "un@mail.com",
 									"type": "string"
 								},
 								{
@@ -224,21 +207,11 @@
 				{
 					"name": "UpsertByUserAuth",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "\r\n[\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324afd\",\r\n        \"qte\": 12\r\n    },\r\n    {\r\n        \"produitRef\": \"60be7a2e38027b2860324b00\",\r\n        \"qte\": 55\r\n    }\r\n]\r\n",
+							"raw": "\r\n[\r\n    {\r\n        \"produitRef\": \"A0001\",\r\n        \"qte\": 10\r\n    },\r\n    {\r\n        \"produitRef\": \"E0001\",\r\n        \"qte\": 5\r\n    }\r\n]\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -262,16 +235,6 @@
 				{
 					"name": "UpdateByUserAuth",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
-									"type": "string"
-								}
-							]
-						},
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -300,16 +263,6 @@
 				{
 					"name": "ByUserAuth",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "07bd382b-2127-4411-b457-f8b4bf133e6a",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -337,7 +290,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Nom&fields%5B%5D=Prix",
+							"raw": "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view",
 							"protocol": "https",
 							"host": [
 								"api",
@@ -356,15 +309,18 @@
 								},
 								{
 									"key": "fields%5B%5D",
-									"value": "Ref"
+									"value": "Ref",
+									"disabled": true
 								},
 								{
 									"key": "fields%5B%5D",
-									"value": "Nom"
+									"value": "Nom",
+									"disabled": true
 								},
 								{
 									"key": "fields%5B%5D",
-									"value": "Prix"
+									"value": "Prix",
+									"disabled": true
 								},
 								{
 									"key": "maxRecords",
@@ -394,22 +350,184 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "GET produit by ref",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "keyCKETjZguzbEMJs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Qte (from Stock)&fields%5B%5D=Nom (from PointRetrait) (from Stock)&maxRecords=1&filterByFormula=%7BRef%7D%20%3D%20%27A0001%27",
+							"protocol": "https",
+							"host": [
+								"api",
+								"airtable",
+								"com"
+							],
+							"path": [
+								"v0",
+								"appjpwR0Jl093ePaL",
+								"Produit"
+							],
+							"query": [
+								{
+									"key": "view",
+									"value": "Grid%20view"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Ref"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Qte (from Stock)"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Nom (from PointRetrait) (from Stock)"
+								},
+								{
+									"key": "maxRecords",
+									"value": "1"
+								},
+								{
+									"key": "filterByFormula",
+									"value": "%7BRef%7D%20%3D%20%27A0001%27"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET produit by ref Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "keyCKETjZguzbEMJs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Qte (from Stock)&fields%5B%5D=Nom (from PointRetrait) (from Stock)&maxRecords=1&filterByFormula=%7BRef%7D%20%3D%20%27A0001%27",
+							"protocol": "https",
+							"host": [
+								"api",
+								"airtable",
+								"com"
+							],
+							"path": [
+								"v0",
+								"appjpwR0Jl093ePaL",
+								"Produit"
+							],
+							"query": [
+								{
+									"key": "view",
+									"value": "Grid%20view"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Ref"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Qte (from Stock)"
+								},
+								{
+									"key": "fields%5B%5D",
+									"value": "Nom (from PointRetrait) (from Stock)"
+								},
+								{
+									"key": "maxRecords",
+									"value": "1"
+								},
+								{
+									"key": "filterByFormula",
+									"value": "%7BRef%7D%20%3D%20%27A0001%27"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "Commande",
-			"item": []
+			"item": [
+				{
+					"name": "Valid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:10000/commande/validation",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10000",
+							"path": [
+								"commande",
+								"validation"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
-		"type": "bearer",
-		"bearer": [
+		"type": "basic",
+		"basic": [
 			{
-				"key": "token",
-				"value": "keyCKETjZguzbEMJs",
+				"key": "password",
+				"value": "motdepasse",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "alex.hern@mail.com",
 				"type": "string"
 			}
 		]
-	}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
 }
