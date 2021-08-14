@@ -20,13 +20,17 @@ type server struct {
 }
 
 var COMMANDE_PORT string
+var ERP_SERV string
 
 func (server *server) Valid(ctx context.Context, panierReq *commandepb.PanierRequest) (*commandepb.CommandeResponse, error) {
 	panier := panierReq.Panier
 	commande := &documents.Commande{
 		Panier: panier,
 	}
-	commande.Valided(*server.db.Database)
+	err := commande.Valided(*server.db.Database, ERP_SERV)
+	if err != nil {
+		return nil, err
+	}
 	commandePB := commande.ToCommandePB()
 	return &commandepb.CommandeResponse{
 		Commande: commandePB,
@@ -77,6 +81,10 @@ func main() {
 	COMMANDE_PORT = os.Getenv("COMMANDE_PORT")
 	if COMMANDE_PORT == "" {
 		COMMANDE_PORT = "50054"
+	}
+	ERP_SERV = os.Getenv("ERP_SERV")
+	if ERP_SERV == "" {
+		ERP_SERV = "erp:50055"
 	}
 	lis, err := net.Listen("tcp", "0.0.0.0:"+COMMANDE_PORT)
 	if err != nil {

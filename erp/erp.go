@@ -80,9 +80,38 @@ func handleRequests() {
 func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
 	// récupérer les info utilisateur commande.panier.utilisateurID
 	// pour chaque produit
-	// requéter Airtable avec comme filtre la ref du produit
+	commande := commandeReq.Commande
+	commande.Statut = "valid"
+	for _, article := range commandeReq.Commande.Panier.Article {
+		url := "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Qte (from Stock)&fields%5B%5D=Nom (from PointRetrait) (from Stock)&maxRecords=1&filterByFormula=%7BRef%7D%20%3D%20%27" + article.ProduitRef + "%27"
+		var bearer = "Bearer " + API_KEY //"keyCKETjZguzbEMJs"
+		req, err := http.NewRequest("GET", url, nil)
+		req.Header.Add("Authorization", bearer)
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Println("Error on response.\n[ERROR] -", err)
+			return nil, err
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Error while reading the response bytes:", err)
+			return nil, err
+		}
+		var temp documents_erp.RepErp
+		if err := json.Unmarshal(body, &temp); err != nil {
+			fmt.Println("failed to unmarshal:", err)
+			return nil, err
+		}
+		if temp.Records[0].Fields.QteStock[0] < article.Qte {
+			commande.Statut = "invalid"
+		}
+	}
 
-	return &erppb.CommandeResponse{}, nil
+	return &erppb.CommandeResponse{
+		Commande: commande,
+	}, nil
 }
 
 func (server *server) ConfirmERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {

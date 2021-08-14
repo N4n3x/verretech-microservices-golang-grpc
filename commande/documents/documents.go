@@ -2,12 +2,16 @@ package documents
 
 import (
 	"context"
+	"fmt"
+	"time"
 	"verretech-microservices/commande/commandepb"
+	"verretech-microservices/erp/erppb"
 	"verretech-microservices/panier/panierpb"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/grpc"
 )
 
 // Nom de la collection
@@ -32,9 +36,21 @@ type Commande struct {
 	Ref       *string             `bson:"ref"`
 }
 
-/// Statut: Validé => Confirmé => Livré
-///                => Annulé
-///         Invalidé
+/// Statut: valid => confim => devilery
+///                => cancel
+///         invalid
+
+// InsertOne Insert une commande en base de données
+// Retourne ObjectID de la commande si l'insertion se passe bien, ou une erreur
+func (commande *Commande) InsertOne(db mongo.Database) (primitive.ObjectID, error) {
+	collection := db.Collection(commandeCollection)
+	result, err := collection.InsertOne(context.Background(), commande)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return result.InsertedID.(primitive.ObjectID), nil
+}
 
 //@return Commandes if user ID match
 func FindByUserID(db mongo.Database, ctx context.Context, id primitive.ObjectID) ([]Commande, error) {
@@ -52,12 +68,41 @@ func FindByUserID(db mongo.Database, ctx context.Context, id primitive.ObjectID)
 }
 
 //@return Commande with Validé or Invalidé statut
-func (commande *Commande) Valided(db mongo.Database) {
+func (commande *Commande) Valided(db mongo.Database, port string) error {
 	///TODO:
 	// connexion ERP pour valider le stock
-	// place le statut à Validé ou Invalidé
-	// si valide, insert en base
+	// place le statut à valid ou invalid
+	// si valid, insert en base
 
+	cc, err := grpc.Dial(port, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		return err
+	}
+	erpClient := erppb.NewServiceERPClient(cc)
+
+	b := &erppb.CommandeRequest{
+		Commande: commande.ToCommandePB(),
+	}
+	res, err := erpClient.ValidERP(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	commande, err = FromCommandePB(res.Commande)
+	if err != nil {
+		return err
+	}
+	if res.Commande.Statut == "Valid" {
+		now := time.Now()
+		ts := now.Unix()
+		commande.Timestamp = &ts
+		id, err := commande.InsertOne(db)
+		if err != nil {
+			return err
+		}
+		commande.ID = &id
+	}
+	return nil
 }
 
 func (commande *Commande) Canceled(db mongo.Database) {
