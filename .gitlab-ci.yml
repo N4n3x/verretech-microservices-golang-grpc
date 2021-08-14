@@ -23,7 +23,8 @@ stages:
 testUnit:
   stage: build
   script:
-    - cd ./produit go test
+    - cd ./produit 
+    - go produit_test
   artifacts:
     paths:
       - mybinary
