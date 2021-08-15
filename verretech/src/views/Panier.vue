@@ -6,7 +6,7 @@
     :subtitle="null"
     finishButtonText="Submit"
   >
-    <tab-content title="Step 1" class="mb-5" icon="feather icon-home">
+    <tab-content title="Panier" class="mb-5" icon="feather icon-home">
       <!-- tab 1 content -->
       <div class="vx-row">
         <div class="vx-col lg:w-2/3 w-full relative">
@@ -20,7 +20,8 @@
                   Verre Cardosa
                 </h6>
                 <p class="text-sm mb-2">
-                  Par <span class="font-semibold cursor-pointer">VerreTech</span>
+                  Par
+                  <span class="font-semibold cursor-pointer">VerreTech</span>
                 </p>
                 <p class="text-success text-sm">En stock</p>
 
@@ -36,7 +37,7 @@
                   Disponible le 30/04/2021
                 </p>
                 <p class="text-success font-medium">
-                  10% offert 
+                  10% offert
                 </p>
               </template>
 
@@ -55,7 +56,9 @@
                   class="item-view-secondary-action-btn bg-primary p-3 rounded-lg flex flex-grow items-center justify-center text-white cursor-pointer"
                 >
                   <feather-icon icon="HeartIcon" />
-                  <span class="text-sm font-semibold ml-2">Liste de souhait</span>
+                  <span class="text-sm font-semibold ml-2"
+                    >Liste de souhait</span
+                  >
                 </div>
               </template>
             </item-list-view>
@@ -68,7 +71,9 @@
             <p class="text-grey mb-3">Options</p>
             <div class="flex justify-between">
               <span class="font-semibold">Coupons</span>
-              <span class="font-medium text-primary cursor-pointer">Appliquer</span>
+              <span class="font-medium text-primary cursor-pointer"
+                >Appliquer</span
+              >
             </div>
 
             <vs-divider />
@@ -107,76 +112,34 @@
     </tab-content>
 
     <!-- tab 2 content -->
-    <tab-content title="Step 2" class="mb-5" icon="feather icon-briefcase">
+    <tab-content
+      title="Vos informations"
+      class="mb-5"
+      icon="feather icon-briefcase"
+    >
       <div class="vx-row">
-        <div class="vx-col md:w-1/2 w-full">
-          <vs-input
-            label="Proposal Title"
-            v-model="proposalTitle"
-            class="w-full mt-4"
-          />
-          <vs-input label="Job Title" v-model="jobTitle" class="w-full mt-4" />
+        <div class="vx-col md:w-1/2">
+          <vs-input label="Prénom" class="w-full" />
+          <vs-input label="Adresse de facturation" class="w-full" />
+          
         </div>
-        <div class="vx-col md:w-1/2 w-full">
-          <vs-textarea
-            v-model="textarea"
-            label="Short discription"
-            class="mb-0 md:mt-10 mt-6"
-            rows="3"
-          />
+        <div class="vx-col md:w-1/2">
+          <vs-input label="Nom" class="w-full" v-model="jobTitle" />
+          <vs-input label="Complément d'adresse" class="w-full" v-model="jobTitle" />
+        </div>
+      </div>
+       <div class="vx-row">
+        <div class="vx-col md:w-1/2">
+        <label for="">Lieu de retrait</label>
+          <v-select :options="[{label: 'Rouen', value: 'rouen'}]" />
         </div>
       </div>
     </tab-content>
 
     <!-- tab 3 content -->
-    <tab-content title="Step 3" class="mb-5" icon="feather icon-image">
+    <tab-content title="Paiement" class="mb-5" icon="feather icon-image">
       <div class="vx-row">
-        <div class="vx-col md:w-1/2 w-full">
-          <vs-input
-            label="Event Name"
-            v-model="eventName"
-            class="w-full mt-5"
-          />
-        </div>
-        <div class="vx-col md:w-1/2 w-full">
-          <vs-select
-            v-model="city"
-            class="w-full select-large mt-5"
-            label="Event Location"
-          >
-            <vs-select-item
-              :key="index"
-              :value="item.value"
-              :text="item.text"
-              v-for="(item, index) in cityOptions"
-              class="w-full"
-            />
-          </vs-select>
-        </div>
-        <div class="vx-col md:w-1/2 w-full mt-5">
-          <vs-select
-            v-model="status"
-            class="w-full select-large"
-            label="Event Status"
-          >
-            <vs-select-item
-              :key="index"
-              :value="item.value"
-              :text="item.text"
-              v-for="(item, index) in statusOptions"
-              class="w-full"
-            />
-          </vs-select>
-        </div>
-        <div class="vx-col md:w-1/2 w-full md:mt-8">
-          <div class="demo-alignment">
-            <span>Requirements:</span>
-            <div class="flex">
-              <vs-checkbox>Staffing</vs-checkbox>
-              <vs-checkbox>Catering</vs-checkbox>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </tab-content>
   </form-wizard>
@@ -185,8 +148,8 @@
 <script>
 import { FormWizard, TabContent } from "vue-form-wizard";
 import "vue-form-wizard/dist/vue-form-wizard.min.css";
-const ItemListView = () => import('./components/ItemListView.vue')
- 
+const ItemListView = () => import("./components/ItemListView.vue");
+import vSelect from 'vue-select'
 export default {
   data() {
     return {
@@ -202,7 +165,10 @@ export default {
   components: {
     FormWizard,
     TabContent,
-    ItemListView
+    ItemListView,
+  
+    'v-select': vSelect,
+  
   },
 };
 </script>

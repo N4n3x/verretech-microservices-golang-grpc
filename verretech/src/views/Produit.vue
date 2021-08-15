@@ -2,10 +2,13 @@
   <div>
     <vx-card>
       <div class="vx-row">
-        <div style="background-repeat: no-repeat; background-position:center" :style="{
-        backgroundImage:
-          'url('+produit.Photos[0].Url+')',
-      }" class="vx-col w-2/5 flex ">
+        <div
+          style="background-repeat: no-repeat; background-position:center"
+          :style="{
+            backgroundImage: 'url(' + produit.Photos[0].Url + ')',
+          }"
+          class="vx-col w-2/5 flex "
+        >
           <!-- <img
             :src="produit.Photos[0].Url"
             class="responsive"
@@ -13,25 +16,21 @@
           /> -->
         </div>
         <div class="vs-col w-3/5">
-          <h3>            {{produit.Nom}}
-</h3>
+          <h3>{{ produit.Nom }}</h3>
           <p class="my-2"><span class="mr-2">by</span><span>VerreTech</span></p>
           <p class="flex items-center flex-wrap">
             <span
               class="text-2xl leading-none font-medium text-primary mr-4 mt-2"
-              >{{produit.Prix}}€</span
+              >{{ produit.Prix }}€</span
             >
-     
+            <!--      
                <star-rating  
               class="pl-4 mr-2 mt-2 border border-solid d-theme-border-grey-light border-t-0 border-b-0 border-r-0"
-                :read-only="true" :increment="0.01"  :star-size="20" :rating="4.4" :fixed-points="2"  :show-rating="false"></star-rating>  <span class="cursor-pointer leading-none mt-2 ml-2"> 424 ratings</span>
-
+                :read-only="true" :increment="0.01"  :star-size="20" :rating="4.4" :fixed-points="2"  :show-rating="false"></star-rating>  <span class="cursor-pointer leading-none mt-2 ml-2"> 424 ratings</span> -->
           </p>
           <vs-divider></vs-divider>
           <p>
-            {{produit.Description}}
-
-
+            {{ produit.Description }}
           </p>
           <vs-list>
             <vs-list-item
@@ -60,6 +59,7 @@
                   type="filled"
                   icon-pack="feather"
                   icon="icon-cart"
+                  @click="addToCart"
                   >Ajouter au panier</vs-button
                 >
                 <vs-button
@@ -75,32 +75,57 @@
           </div>
         </div>
       </div>
-      <div class="mt-5">
+      <!-- <div class="mt-5">
         <vs-divider>Avis des clients</vs-divider>
        <commentsProduct ></commentsProduct>
-      </div>
+      </div> -->
     </vx-card>
   </div>
 </template>
 <script>
-import StarRating from 'vue-star-rating'
-import axios from "axios"
-import CommentsProduct from '../components/site/commentaires/CommentsProduct.vue';
+import StarRating from "vue-star-rating";
+import axios from "axios";
+import CommentsProduct from "../components/site/commentaires/CommentsProduct.vue";
 export default {
   data() {
     return {
-      produit : {}
-    }
+      produit: {},
+    };
+  },
+  methods: {
+    addToCart() {
+      var auth = {
+        username: "un@mail.com",
+        password: "motdepasse",
+      };
+      const token = Buffer.from(
+        `${auth.username}:${auth.password}`,
+        "utf8"
+      ).toString("base64");
+      axios
+        .get("http://35.156.182.188:10000/panier", {
+          headers: {
+            Authorization: `Basic ${token}`,
+          },
+        })
+        .then((res) => {
+          this.panier = res.data;
+          console.log("panier : ", this.panier);
+        });
+    },
   },
   components: {
-
     CommentsProduct,
-    StarRating
+    StarRating,
   },
   created() {
-     axios.get('http://localhost:10000/produit/'+this.$route.params.ref).then((res)=>{
-        this.produit = res.data
-      })
+    var _this = this;
+    axios
+      .get("http://35.156.182.188:10000/produit/" + this.$route.params.ref)
+      .then((res) => {
+        this.produit = res.data;
+        console.log("produit : ", this.produit);
+      });
   },
 };
 </script>

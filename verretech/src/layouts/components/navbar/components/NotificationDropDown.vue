@@ -1,7 +1,7 @@
 <template>
   <!-- NOTIFICATIONS -->
   <vs-dropdown vs-custom-content vs-trigger-click class="cursor-pointer">
-    <feather-icon icon="BellIcon" class="cursor-pointer mt-1 sm:mr-6 mr-2" :badge="unreadNotifications.length" />
+    <feather-icon icon="Icon" class="cursor-pointer mt-1 sm:mr-6 mr-2" :badge="unreadNotifications.length" />
 
     <vs-dropdown-menu class="notification-dropdown dropdown-custom vx-navbar-dropdown">
 

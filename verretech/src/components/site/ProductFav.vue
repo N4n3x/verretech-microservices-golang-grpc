@@ -2,7 +2,7 @@
   <div class="bandeau ">
     <div class="vx-row m-5 p-5">
       <div class="w-full justify-center">
-        <h1>Catégories phares</h1>
+        <h1>Produits phares</h1>
       </div>
       <div class="w-full justify-center">
         <p class="fs-1-5 w-2/3 text-center mt-5">

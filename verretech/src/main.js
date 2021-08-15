@@ -73,8 +73,8 @@ require('./assets/css/iconfont.css')
 // Note: In latest version you have to add it separately
 // import 'vue-select/dist/vue-select.css';
 
-
 Vue.config.productionTip = false
+
 
 new Vue({
     router,

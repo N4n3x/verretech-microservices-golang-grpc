@@ -23,46 +23,28 @@ export default {
         }
 
         // If remember_me is enabled change firebase Persistence
-        if (!payload.checkbox_remember_me) {
-
-            // Change firebase Persistence
-            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
-
-                // If success try to login
-                .then(function () {
-                    dispatch('login', newPayload)
-                })
-
-                // If error notify
-                .catch(function (err) {
-
-                    // Close animation if passed as payload
-                    if (payload.closeAnimation) payload.closeAnimation()
-
-                    payload.notify({
-                        time: 2500,
-                        title: 'Error',
-                        text: err.message,
-                        iconPack: 'feather',
-                        icon: 'icon-alert-circle',
-                        color: 'danger'
-                    })
-                })
-        } else {
+   
             // Try to login
+            alert('login')
+            console.log(newPayload)
             dispatch('login', newPayload)
-        }
+   
     },
     async login({ commit, state, dispatch }, payload) {
-        console.log(payload)
-        await axios.get("http://localhost:10000/auth/token",  {
+        console.log(payload.userDetails.email)
+        console.log(payload.userDetails.password)
+     
+        await axios.get("http://35.156.182.188:10000/auth/token",   {
+            headers: {'Access-Control-Allow-Origin': '*'},
+          
             auth: {
               username: payload.userDetails.email,
               password: payload.userDetails.password
             }
           }).then((result)=>{
+              console.log("result", result)
               localStorage.setItem('userInfo', JSON.stringify(result.data))
-              console.log(result)
+
           })
         // var headers = new Headers()
         // headers.set("Authorization", "'Basic '" + Buffer.from(payload.userDetails.email + ":" + payload.userDetails.password).toString("base64"))
@@ -72,7 +54,7 @@ export default {
         //     mode: "cors",
         //     headers: headers
         // };
-        // fetch("http://localhost:10000/auth/token", options).then(
+        // fetch(" http://35.156.182.188:10000/auth/token", options).then(
         //     (res)=>{
         //         console.log(res)
         //     }
