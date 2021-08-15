@@ -19,7 +19,7 @@
       <router-link tag="div" to="/" class="vx-logo cursor-pointer mx-auto flex items-center">
         <logo class="w-10 mr-4 fill-current text-primary" />
       </router-link>
-      <!-- <shopping-cart-icon size="1.5x" class="custom-class mr-5"></shopping-cart-icon> -->
+      <shopping-cart-icon @click="$router.push('panier')" size="1.5x" class="custom-class mr-5"></shopping-cart-icon>
       <profile-drop-down />
 
     </vs-navbar>

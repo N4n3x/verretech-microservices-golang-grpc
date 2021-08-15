@@ -86,6 +86,7 @@
 import StarRating from "vue-star-rating";
 import axios from "axios";
 import CommentsProduct from "../components/site/commentaires/CommentsProduct.vue";
+let base64 = require('base-64');
 export default {
   data() {
     return {
@@ -103,14 +104,42 @@ export default {
         "utf8"
       ).toString("base64");
       axios
-        .get("http://35.156.182.188:10000/panier", {
-          headers: {
-            Authorization: `Basic ${token}`,
+        .get("http://localhost:10000/panier", {
+          auth: {
+            username: "un@mail.com",
+            password: "motdepasse",
           },
         })
         .then((res) => {
           this.panier = res.data;
           console.log("panier : ", this.panier);
+
+          const resultat = this.panier.Articles.find(
+            (produit) => produit.ProduitRef === this.produit.Ref
+          );
+          if (resultat == undefined) {
+            this.panier.Articles.push({
+              ProduitRef: this.produit.Ref,
+              Qte: 1,
+            });
+          } else {
+            resultat.Qte++;
+          }
+
+          var requestOptions = {
+            method: "POST",
+            headers: new Headers({
+              Authorization: `Basic ${base64.encode(`${"un@mail.com"}:${"motdepasse"}`)}`,
+            }),
+            body: this.panier,
+            redirect: "follow",
+          };
+
+          fetch("http://localhost:10000/panier", requestOptions)
+            .then((response) => response.text())
+            .then((result) => console.log(result))
+            .catch((error) => console.log("error", error));
+          console.log("panier A: ", this.panier);
         });
     },
   },
@@ -121,7 +150,7 @@ export default {
   created() {
     var _this = this;
     axios
-      .get("http://35.156.182.188:10000/produit/" + this.$route.params.ref)
+      .get("http://localhost:10000/produit/" + this.$route.params.ref)
       .then((res) => {
         this.produit = res.data;
         console.log("produit : ", this.produit);

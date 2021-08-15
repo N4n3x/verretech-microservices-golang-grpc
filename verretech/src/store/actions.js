@@ -51,7 +51,7 @@ const actions = {
     },
 
     updateProductList({ commit }){
-      axios.get(' http://35.156.182.188:10000/produit').then((res)=>{
+      axios.get(' http://localhost:10000/produit').then((res)=>{
         console.log('product list', res)
         commit('UPDATE_PRODUCT_LIST', res.data)
 

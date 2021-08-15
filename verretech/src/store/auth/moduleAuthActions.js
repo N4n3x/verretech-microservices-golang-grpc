@@ -34,7 +34,7 @@ export default {
         console.log(payload.userDetails.email)
         console.log(payload.userDetails.password)
      
-        await axios.get("http://35.156.182.188:10000/auth/token",   {
+        await axios.get("http://localhost:10000/auth/token",   {
             headers: {'Access-Control-Allow-Origin': '*'},
           
             auth: {
@@ -54,7 +54,7 @@ export default {
         //     mode: "cors",
         //     headers: headers
         // };
-        // fetch(" http://35.156.182.188:10000/auth/token", options).then(
+        // fetch(" http://localhost:10000/auth/token", options).then(
         //     (res)=>{
         //         console.log(res)
         //     }

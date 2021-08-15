@@ -55,7 +55,7 @@ const is_touch_device = () => {
 // /////////////////////////////////////////////
 
 const state = {
-    AppActiveUser           : userInfo.utilisateur,
+    AppActiveUser           : userInfo ? userInfo.utilisateur : "",
     bodyOverlay             : false,
     isVerticalNavMenuActive : true,
     is_touch_device         : is_touch_device(),
