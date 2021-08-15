@@ -6,6 +6,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/rs/cors v1.8.0 // indirect
 	github.com/shaj13/go-guardian v1.5.11
 	go.mongodb.org/mongo-driver v1.5.2
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

@@ -24,10 +24,10 @@ var ERP_SERV string
 
 func (server *server) Valid(ctx context.Context, panierReq *commandepb.PanierRequest) (*commandepb.CommandeResponse, error) {
 	panier := panierReq.Panier
-	commande := &documents.Commande{
+	c := &documents.Commande{
 		Panier: panier,
 	}
-	err := commande.Valided(*server.db.Database, ERP_SERV)
+	commande, err := c.Valided(*server.db.Database, ERP_SERV)
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +37,11 @@ func (server *server) Valid(ctx context.Context, panierReq *commandepb.PanierReq
 	}, nil
 }
 
-func (server *server) Confirm(ctx context.Context, commandeReq *commandepb.CommandeRequest) (*commandepb.CommandeResponse, error) {
-	commande, err := documents.FromCommandePB(commandeReq.Commande)
+func (server *server) Confirm(ctx context.Context, commandeReq *commandepb.ConfirmRequest) (*commandepb.CommandeResponse, error) {
+	commande, err := documents.Confirmed(*server.db.Database, commandeReq.CommandeID, commandeReq.UserID)
 	if err != nil {
 		return nil, err
 	}
-	commande.Confirmed(*server.db.Database)
 	commandePB := commande.ToCommandePB()
 	return &commandepb.CommandeResponse{
 		Commande: commandePB,
@@ -64,10 +63,12 @@ func (server *server) Cancel(ctx context.Context, commandeReq *commandepb.Comman
 func (server *server) GetUserCommandes(ctx context.Context, req *commandepb.ByUtilisateurRequest) (*commandepb.CommandesResponse, error) {
 	///TODO
 	idUtilisateur, err := primitive.ObjectIDFromHex(req.UtilisateurID)
+	fmt.Println("Service Commande commandes => ", idUtilisateur.Hex())
 	if err != nil {
 		return nil, err
 	}
 	commandes, err := documents.FindByUserID(*server.db.Database, ctx, idUtilisateur)
+	fmt.Println("Service Commande commandes => ", commandes)
 	commandespb := []*commandepb.Commande{}
 	for _, commande := range commandes {
 		commandespb = append(commandespb, commande.ToCommandePB())

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"verretech-microservices/commande/documents"
 	documents_erp "verretech-microservices/erp/documents"
 	"verretech-microservices/erp/erppb"
 	"verretech-microservices/produit/produitpb"
@@ -80,10 +82,15 @@ func handleRequests() {
 func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
 	// récupérer les info utilisateur commande.panier.utilisateurID
 	// pour chaque produit
-	commande := commandeReq.Commande
-	commande.Statut = "valid"
+	commande, err := documents.FromCommandePB(commandeReq.Commande)
+	if err != nil {
+		return nil, err
+	}
+	valid := "valid"
+	invalid := "invalid"
+	commande.Statut = valid
 	for _, article := range commandeReq.Commande.Panier.Article {
-		url := "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Qte (from Stock)&fields%5B%5D=Nom (from PointRetrait) (from Stock)&maxRecords=1&filterByFormula=%7BRef%7D%20%3D%20%27" + article.ProduitRef + "%27"
+		url := "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Produit?view=Grid%20view&fields%5B%5D=Ref&fields%5B%5D=Qte%20%28from%20Stock%29&fields%5B%5D=Nom%20%28from%20PointRetrait%29%20%28from%20Stock%29&maxRecords=1&filterByFormula=%7BRef%7D%20%3D%20%27" + article.ProduitRef + "%27"
 		var bearer = "Bearer " + API_KEY //"keyCKETjZguzbEMJs"
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Add("Authorization", bearer)
@@ -94,28 +101,55 @@ func (server *server) ValidERP(ctx context.Context, commandeReq *erppb.CommandeR
 			return nil, err
 		}
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		// body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("Error while reading the response bytes:", err)
 			return nil, err
 		}
-		var temp documents_erp.RepErp
-		if err := json.Unmarshal(body, &temp); err != nil {
-			fmt.Println("failed to unmarshal:", err)
+		var temp documents_erp.StockRepErp
+		// if err := json.Unmarshal(body, &temp); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&temp); err != nil {
+			fmt.Println("failed to unmarshal:", err, " =>", resp, " url: ", url)
 			return nil, err
 		}
 		if temp.Records[0].Fields.QteStock[0] < article.Qte {
-			commande.Statut = "invalid"
+			commande.Statut = invalid
 		}
 	}
-
+	// fmt.Println("ValidERP commande => ", commande)
 	return &erppb.CommandeResponse{
-		Commande: commande,
+		Commande: commande.ToCommandePB(),
 	}, nil
 }
 
 func (server *server) ConfirmERP(ctx context.Context, commandeReq *erppb.CommandeRequest) (*erppb.CommandeResponse, error) {
-
+	url := "https://api.airtable.com/v0/appjpwR0Jl093ePaL/Commande"
+	var bearer = "Bearer " + API_KEY //"keyCKETjZguzbEMJs"
+	// body
+	informations := fmt.Sprintf("%v", commandeReq.Commande)
+	values := map[string]string{"id": commandeReq.Commande.ID, "Informations": informations}
+	json_data, err := json.Marshal(values)
+	if nil != err {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json_data))
+	req.Header.Add("Authorization", bearer)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error on response.\n[ERROR] -", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("Error while reading the response bytes:", err)
+		return nil, err
+	}
+	var res map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		fmt.Println("failed to unmarshal:", err, " =>", resp, " url: ", url)
+		return nil, err
+	}
 	return &erppb.CommandeResponse{}, nil
 }
 

@@ -20,6 +20,11 @@ message CommandeRequest {
     Commande commande = 1;
 }
 
+message ConfirmRequest {
+    string commandeID = 1;
+    string userID = 2;
+}
+
 message CommandeResponse {
     Commande commande = 1;
 }
@@ -34,7 +39,7 @@ message ByUtilisateurRequest {
 
 service ServiceCommande {
     rpc Valid (PanierRequest) returns (CommandeResponse);
-    rpc Confirm (CommandeRequest) returns (CommandeResponse);
+    rpc Confirm (ConfirmRequest) returns (CommandeResponse);
     rpc Cancel (CommandeRequest) returns (CommandeResponse);
     rpc GetUserCommandes(ByUtilisateurRequest) returns (CommandesResponse);
 }

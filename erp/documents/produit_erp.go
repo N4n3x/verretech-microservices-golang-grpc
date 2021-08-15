@@ -64,13 +64,28 @@ type ProduitErp struct {
 	Tags        []string `json:"Tags"`
 }
 
+type StockProduitErp struct {
+	Ref      string   `json:"Ref"`
+	QteStock []int32  `json:"Qte (from Stock)"`
+	NomPdR   []string `json:"Nom (from PointRetrait) (from Stock)"`
+}
+
 type BodyErp struct {
 	Id     string      `json:"id"`
 	Fields *ProduitErp `json:"fields"`
 }
 
+type StockBodyErp struct {
+	Id     string           `json:"id"`
+	Fields *StockProduitErp `json:"fields"`
+}
+
 type RepErp struct {
 	Records []*BodyErp `json:"records"`
+}
+
+type StockRepErp struct {
+	Records []*StockBodyErp `json:"records"`
 }
 
 // InsertOne Insert un produit en base de données
