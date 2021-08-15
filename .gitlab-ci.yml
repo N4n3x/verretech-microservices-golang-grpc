@@ -20,12 +20,41 @@ before_script:
 stages:
   - build
 
-#format:
-# stage: test
-#script:
-# - go fmt $(go list ./... | grep -v /vendor/)
-#- go vet $(go list ./... | grep -v /vendor/)
+testProduit:
+  stage: build
+  script:
+    - cd ./produit 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
 
+testPanier:
+  stage: build
+  script:
+    - cd ./panier 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
+
+testGateway:
+  stage: build
+  script:
+    - cd ./gateway 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
+
+testErp:
+  stage: build
+  script:
+    - cd ./erp 
+    - go test
+  artifacts:
+    paths:
+      - mybinary
 
 compile:
   stage: build
