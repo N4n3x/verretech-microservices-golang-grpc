@@ -1,6 +1,11 @@
 # verretech-microservices
 Architecture micro services en GO pour site e-Commerce
 
+## Déploiement
+* ```git clone https://gitlab.com/alex.hern.dev/verretech-microservices.git```
+* ```cd verretech-microservices```
+* ```docker-compose up```
+
 ## TODO
 ### Produit (:50051)
 * ✅ Création interface GRPC
@@ -22,8 +27,8 @@ Architecture micro services en GO pour site e-Commerce
 * ✅ Conception des fonctions métiers
 ### Commande (:50054)
 * ✅ Création interface GRPC
-* ⏳ Connexion à la base de données
-* ⏳ Conception des fonctions métiers
+* ✅ Connexion à la base de données
+* ✅ Conception des fonctions métiers
 ### ERP (:50050)
 * ✅ Création connecteur ERP
 * ✅ Mise à jour Service Produit
@@ -38,22 +43,21 @@ Architecture micro services en GO pour site e-Commerce
   * ✅ GET /produit?tag=###
   * ✅ GET /produit/Ref
 * Utilisateur
+  * ✅ GET /auth
   * ✅ POST /utilisateur
-  * ✅ GET /utilisateur?params=###
   * ✅ GET /utilisateur
   * ✅ PUT /utilisateur
-  * ⏳ DELETE /utilisateur/ID
 * Panier
   * ✅ POST /panier
   * ✅ GET /panier
-  * ✅ PUT /panier/ID
+  * ✅ PUT /panier
 * Commande
-  * ⏳ POST /commande
-  * ⏳ GET /commande?params=###
-  * ⏳ GET /commande/ID
-* Indicateur
-  * ⏳ GET /indicateur?params=###
-### Gestion d'erreurs ⏳
+  * ✅ POST /commande
+  * ✅ GET /commande/validation
+  * ✅ GET /commande/confirmation/{idCommande}
+  * ✅ GET /commande/annulation/{idCommande}
+
+### Gestion d'erreurs ✅
 
 ### CMD
 * Générer les interfaces du protocol buffer:
