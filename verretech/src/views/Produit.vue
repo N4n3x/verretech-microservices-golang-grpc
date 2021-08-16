@@ -112,6 +112,7 @@ export default {
         })
         .then((res) => {
           this.panier = res.data;
+          localStorage.panier = JSON.stringify(res.data)
           console.log("panier : ", this.panier);
 
           const resultat = this.panier.Articles.find(
