@@ -56,7 +56,7 @@
 
             <div class="my-6">
               <h5 class="font-bold text-center">
-                {{ item.Prix * 1.2 * item.Qte }}€
+                {{ (item.Prix * 1.2 * item.Qte).toFixed(2) }}€
               </h5>
             </div>
 

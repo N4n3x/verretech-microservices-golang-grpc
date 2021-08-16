@@ -4,7 +4,8 @@
     :title="null"
     nextButtonText="Suivant"
     :subtitle="null"
-    finishButtonText="Submit"
+    finishButtonText="Confimer ma commande"
+     @on-complete="formSubmitted"
   >
 
     <tab-content title="Panier" class="mb-5" icon="feather icon-home">
@@ -109,7 +110,7 @@
     </tab-content>
 
     <!-- tab 2 content -->
-    <tab-content
+    <!-- <tab-content
       title="Vos informations"
       class="mb-5"
       icon="feather icon-briefcase"
@@ -134,12 +135,10 @@
           <v-select :options="[{ label: 'Rouen', value: 'rouen' }]" />
         </div>
       </div>
-    </tab-content>
+    </tab-content> -->
 
     <!-- tab 3 content -->
-    <tab-content title="Paiement" class="mb-5" icon="feather icon-image">
-      <div class="vx-row"></div>
-    </tab-content>
+  
   </form-wizard>
 </template>
 
@@ -154,13 +153,27 @@ export default {
     return {
       firstName: "",
       panier: {},
-      articles: []
+      articles: [],
+      commandValid: false
       /// other data....
     };
   },
   methods: {
     formSubmitted() {
-      alert("Form submitted!");
+      console.log('sbmited')
+        axios
+        .get("http://localhost:10000/commande/validation", {
+          auth: {
+            username:"un@mail.com",
+            password:"motdepasse"
+          }
+        })
+        .then((res) => {
+          console.log(res)
+          this.commandValid  = true;
+        }).catch(err=>{
+          console.error(err)
+        });
     },
   },
   created() {
@@ -180,7 +193,7 @@ export default {
   computed:{
     tva(){
       
-      return this.totalPrice-this.htPrice
+      return (this.totalPrice-this.htPrice).toFixed(2)
     },
     htPrice(){
        var total = 0;
@@ -188,7 +201,7 @@ export default {
         const element = this.articles[i];
         total+= (element.Prix)*element.Qte
       }
-      return total
+      return total.toFixed(2)
     },
     totalPrice(){
       var total = 0;
@@ -197,7 +210,7 @@ export default {
                total+= (element.Prix*1.2)*element.Qte
 
       }
-      return total
+      return total.toFixed(2)
     }
   },
   components: {
