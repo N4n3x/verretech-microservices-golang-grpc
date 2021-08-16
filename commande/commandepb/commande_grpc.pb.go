@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceCommandeClient interface {
 	Valid(ctx context.Context, in *PanierRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
-	Confirm(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
+	Confirm(ctx context.Context, in *ConfirmRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
 	Cancel(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error)
 	GetUserCommandes(ctx context.Context, in *ByUtilisateurRequest, opts ...grpc.CallOption) (*CommandesResponse, error)
 }
@@ -41,7 +41,7 @@ func (c *serviceCommandeClient) Valid(ctx context.Context, in *PanierRequest, op
 	return out, nil
 }
 
-func (c *serviceCommandeClient) Confirm(ctx context.Context, in *CommandeRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
+func (c *serviceCommandeClient) Confirm(ctx context.Context, in *ConfirmRequest, opts ...grpc.CallOption) (*CommandeResponse, error) {
 	out := new(CommandeResponse)
 	err := c.cc.Invoke(ctx, "/commande.ServiceCommande/Confirm", in, out, opts...)
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *serviceCommandeClient) GetUserCommandes(ctx context.Context, in *ByUtil
 // for forward compatibility
 type ServiceCommandeServer interface {
 	Valid(context.Context, *PanierRequest) (*CommandeResponse, error)
-	Confirm(context.Context, *CommandeRequest) (*CommandeResponse, error)
+	Confirm(context.Context, *ConfirmRequest) (*CommandeResponse, error)
 	Cancel(context.Context, *CommandeRequest) (*CommandeResponse, error)
 	GetUserCommandes(context.Context, *ByUtilisateurRequest) (*CommandesResponse, error)
 	mustEmbedUnimplementedServiceCommandeServer()
@@ -86,7 +86,7 @@ type UnimplementedServiceCommandeServer struct {
 func (UnimplementedServiceCommandeServer) Valid(context.Context, *PanierRequest) (*CommandeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Valid not implemented")
 }
-func (UnimplementedServiceCommandeServer) Confirm(context.Context, *CommandeRequest) (*CommandeResponse, error) {
+func (UnimplementedServiceCommandeServer) Confirm(context.Context, *ConfirmRequest) (*CommandeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Confirm not implemented")
 }
 func (UnimplementedServiceCommandeServer) Cancel(context.Context, *CommandeRequest) (*CommandeResponse, error) {
@@ -127,7 +127,7 @@ func _ServiceCommande_Valid_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _ServiceCommande_Confirm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CommandeRequest)
+	in := new(ConfirmRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func _ServiceCommande_Confirm_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/commande.ServiceCommande/Confirm",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceCommandeServer).Confirm(ctx, req.(*CommandeRequest))
+		return srv.(ServiceCommandeServer).Confirm(ctx, req.(*ConfirmRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -2,7 +2,9 @@ package documents
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"time"
 	"verretech-microservices/commande/commandepb"
 	"verretech-microservices/erp/erppb"
@@ -29,11 +31,11 @@ const commandeCollection = "commande"
 // }
 
 type Commande struct {
-	ID        *primitive.ObjectID `bson:"_id"`
-	Panier    *panierpb.Panier    `bson:"panier"`
-	Timestamp *int64              `bson:"timestamp"`
-	Statut    *string             `bson:"statut"`
-	Ref       *string             `bson:"ref"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Panier    *panierpb.Panier   `bson:"panier"`
+	Timestamp int64              `bson:"timestamp"`
+	Statut    string             `bson:"statut"`
+	Ref       string             `bson:"ref"`
 }
 
 /// Statut: valid => confim => devilery
@@ -52,11 +54,24 @@ func (commande *Commande) InsertOne(db mongo.Database) (primitive.ObjectID, erro
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
+// UpdateOne Insert une commande en base de données
+// Retourne ObjectID de la commande si l'insertion se passe bien, ou une erreur
+func (commande *Commande) UpdateOne(db mongo.Database) (int64, error) {
+	collection := db.Collection(commandeCollection)
+	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": commande.ID.Hex()}, commande)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.ModifiedCount, nil
+}
+
 //@return Commandes if user ID match
 func FindByUserID(db mongo.Database, ctx context.Context, id primitive.ObjectID) ([]Commande, error) {
 	commandes := []Commande{}
 	collection := db.Collection(commandeCollection)
-	query := bson.M{"panier": bson.M{"utilisateurID": id}}
+	// query := bson.M{"panier": bson.M{"utilisateurid": id.Hex()}}
+	query := bson.M{"panier.utilisateurid": id.Hex()}
 	cursor, err := collection.Find(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -68,7 +83,7 @@ func FindByUserID(db mongo.Database, ctx context.Context, id primitive.ObjectID)
 }
 
 //@return Commande with Validé or Invalidé statut
-func (commande *Commande) Valided(db mongo.Database, port string) error {
+func (commande *Commande) Valided(db mongo.Database, port string) (Commande, error) {
 	///TODO:
 	// connexion ERP pour valider le stock
 	// place le statut à valid ou invalid
@@ -76,8 +91,8 @@ func (commande *Commande) Valided(db mongo.Database, port string) error {
 
 	cc, err := grpc.Dial(port, grpc.WithInsecure())
 	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return err
+		fmt.Printf("Error grpc: %v", err)
+		return Commande{}, err
 	}
 	erpClient := erppb.NewServiceERPClient(cc)
 
@@ -86,23 +101,27 @@ func (commande *Commande) Valided(db mongo.Database, port string) error {
 	}
 	res, err := erpClient.ValidERP(context.Background(), b)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error validERP: %v", err)
+		return Commande{}, err
 	}
-	commande, err = FromCommandePB(res.Commande)
+	fmt.Printf("Valided befor %v", res)
+	commandeRep, err := FromCommandePB(res.Commande)
 	if err != nil {
-		return err
+		return Commande{}, err
 	}
-	if res.Commande.Statut == "Valid" {
+	fmt.Printf("Valided after %v", commande)
+	if res.Commande.Statut == "valid" {
 		now := time.Now()
 		ts := now.Unix()
-		commande.Timestamp = &ts
-		id, err := commande.InsertOne(db)
+		commandeRep.Timestamp = ts
+		id, err := commandeRep.InsertOne(db)
 		if err != nil {
-			return err
+			fmt.Printf("Error insert: %v", err)
+			return Commande{}, err
 		}
-		commande.ID = &id
+		commandeRep.ID = id
 	}
-	return nil
+	return *commandeRep, nil
 }
 
 func (commande *Commande) Canceled(db mongo.Database) {
@@ -111,50 +130,89 @@ func (commande *Commande) Canceled(db mongo.Database) {
 	// Met à jour en base de données
 }
 
-func (commande *Commande) Confirmed(db mongo.Database) {
+func Confirmed(db mongo.Database, idCmd string, idUser string) (Commande, error) {
 	///TODO:
+	// get commande
+	commande := Commande{}
+	collection := db.Collection(commandeCollection)
+	// query := bson.M{"panier": bson.M{"utilisateurid": id.Hex()}}
+	query := bson.M{
+		"$and": []bson.M{
+			{"panier.utilisateurid": idUser},
+			{"_id": idCmd},
+		},
+	}
+	err := collection.FindOne(context.Background(), query).Decode(commande)
+	if err != nil {
+		return Commande{}, err
+	}
+	if commande.Statut != "valid" {
+		return Commande{}, errors.New("Commande non valide")
+	}
 	// Place le statut Confirmé si son statut est à l'état Validé
+	commande.Statut = "confirm"
 	// Met à jour en base de données
+	n, err := commande.UpdateOne(db)
+	if n <= 0 {
+		fmt.Printf("Error grpc: %v", err)
+		return Commande{}, errors.New("Aucune commande modifié")
+	}
 	// connexion ERP pour insertion nouvelle commande
+	cc, err := grpc.Dial(os.Getenv("ERP_SERV"), grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error grpc: %v", err)
+		return Commande{}, err
+	}
+	erpClient := erppb.NewServiceERPClient(cc)
+
+	b := &erppb.CommandeRequest{
+		Commande: commande.ToCommandePB(),
+	}
+	res, err := erpClient.ConfirmERP(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error confirmERP: %v %v", err, res)
+		return Commande{}, err
+	}
+	return commande, nil
 }
 
 func (commande *Commande) ToCommandePB() *commandepb.Commande {
 	commandeResp := &commandepb.Commande{}
-	if commande.ID != nil {
+	if commande.ID != primitive.NilObjectID {
 		commandeResp.ID = commande.ID.Hex()
 	}
 	if commande.Panier != nil {
 		commandeResp.Panier = commande.Panier
 	}
-	if commande.Ref != nil {
-		commandeResp.Ref = *commande.Ref
+	if commande.Ref != "" {
+		commandeResp.Ref = commande.Ref
 	}
-	if commande.Statut != nil {
-		commandeResp.Statut = *commande.Statut
+	if commande.Statut != "" {
+		commandeResp.Statut = commande.Statut
 	}
-	if commande.Timestamp != nil {
-		commandeResp.Timestamp = *commande.Timestamp
+	if commande.Timestamp != 0 {
+		commandeResp.Timestamp = commande.Timestamp
 	}
 	return commandeResp
 }
 
 func FromCommandePB(commandeProto *commandepb.Commande) (*Commande, error) {
-	commande := &Commande{}
+	var commande = new(Commande)
 	if commandeProto.ID != "" {
 		oid, _ := primitive.ObjectIDFromHex(commandeProto.ID)
-		commande.ID = &oid
+		commande.ID = oid
 	}
 	if commandeProto.Panier != nil {
 		commande.Panier = commandeProto.Panier
 	}
 	if commandeProto.Ref != "" {
-		commande.Ref = &commandeProto.Ref
+		commande.Ref = commandeProto.Ref
 	}
 	if commandeProto.Statut != "" {
-		commande.Statut = &commandeProto.Statut
+		commande.Statut = commandeProto.Statut
 	}
 	if commandeProto.Timestamp != primitive.NilObjectID.Timestamp().Unix() {
-		commande.Timestamp = &commandeProto.Timestamp
+		commande.Timestamp = commandeProto.Timestamp
 	}
 	return commande, nil
 }

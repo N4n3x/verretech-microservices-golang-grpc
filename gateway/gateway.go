@@ -20,6 +20,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/shaj13/go-guardian/auth"
 	"github.com/shaj13/go-guardian/auth/strategies/basic"
 	"github.com/shaj13/go-guardian/auth/strategies/bearer"
@@ -240,6 +241,8 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 	cc, err := grpc.Dial(PRODUIT_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
+		json.NewEncoder(w).Encode("Erreur grpc produit")
+		return
 	}
 	produitClient := produitpb.NewServiceProduitClient(cc)
 	params := r.URL.Query().Get("tag")
@@ -251,6 +254,8 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 		res, err := produitClient.GetProduitsByTags(context.Background(), b)
 		if err != nil {
 			fmt.Printf("Unable to get Products: %v", err)
+			json.NewEncoder(w).Encode("Erreur GetProduitsByTags")
+			return
 		}
 		data = res
 	} else {
@@ -258,6 +263,8 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 		res, err := produitClient.GetAllProduits(context.Background(), b)
 		if err != nil {
 			fmt.Printf("Unable to get Products: %v", err)
+			json.NewEncoder(w).Encode("Erreur GetAllProduits")
+			return
 		}
 		data = res
 	}
@@ -268,6 +275,8 @@ func GetProduits(w http.ResponseWriter, r *http.Request) {
 		d, derr := documents.FromProduitPB(pr)
 		if derr != nil {
 			fmt.Printf("Unable to get Products: %v", err)
+			json.NewEncoder(w).Encode("Erreur FromProduitPB")
+			return
 		}
 		produits = append(produits, d)
 	}
@@ -288,6 +297,8 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 	cc, err := grpc.Dial(PRODUIT_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Unable to connect to server : %v", err)
+		json.NewEncoder(w).Encode("Erreur grpc")
+		return
 	}
 	produitClient := produitpb.NewServiceProduitClient(cc)
 	b := &produitpb.ProduitByRefRequest{
@@ -296,10 +307,14 @@ func GetProduitByRef(w http.ResponseWriter, r *http.Request) {
 	res, err := produitClient.GetProduitByRef(context.Background(), b)
 	if err != nil {
 		fmt.Printf("Unable to get Products: %v", err)
+		json.NewEncoder(w).Encode("Erreur GetProduitByRef")
+		return
 	}
 	produit, perr := documents.FromProduitPB(res.Produit)
 	if perr != nil {
 		fmt.Printf("Unable to get Products: %v", err)
+		json.NewEncoder(w).Encode("Erreur FromProduitPB")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(produit)
@@ -318,6 +333,8 @@ func GetPanier(w http.ResponseWriter, r *http.Request) {
 	cc, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
+		json.NewEncoder(w).Encode("Erreur grpc")
+		return
 	}
 	panierClient := panierpb.NewServicePanierClient(cc)
 
@@ -327,6 +344,8 @@ func GetPanier(w http.ResponseWriter, r *http.Request) {
 	res, err := panierClient.GetPanier(context.Background(), b)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
+		json.NewEncoder(w).Encode("Erreur GetPanier")
+		return
 	}
 	panier, err := panierDoc.FromPanierPB(res.Panier)
 	if err != nil {
@@ -385,6 +404,44 @@ func UpdatePanier(w http.ResponseWriter, r *http.Request) {
 ///
 //Commande
 ///
+func GetCommandes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	// Va chercher le panier
+	uRep, err := infoCurrentUser(r)
+	if err != nil {
+		json.NewEncoder(w).Encode("Erreur Utilisateur")
+		return
+	}
+	cc, err := grpc.Dial(COMMANDE_SERV, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		json.NewEncoder(w).Encode("Erreur GRPC")
+		return
+	}
+	commandeClient := commandepb.NewServiceCommandeClient(cc)
+
+	b := &commandepb.ByUtilisateurRequest{
+		UtilisateurID: uRep.Utilisateur.ID,
+	}
+	res, err := commandeClient.GetUserCommandes(context.Background(), b)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		json.NewEncoder(w).Encode("Erreur Commande")
+		return
+	}
+	var commandes []commandeDoc.Commande
+	for _, c := range res.Commandes {
+		t, err := commandeDoc.FromCommandePB(c)
+		if err != nil {
+			fmt.Printf("Error: %v", err)
+			json.NewEncoder(w).Encode("Erreur CommandePB")
+			return
+		}
+		commandes = append(commandes, *t)
+	}
+	json.NewEncoder(w).Encode(commandes)
+}
+
 func ValidCommande(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	// Va chercher le panier
@@ -430,7 +487,56 @@ func ValidCommande(w http.ResponseWriter, r *http.Request) {
 }
 
 func ConfirmCommande(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("00 ====>  ", r)
+	vars := mux.Vars(r)
+	fmt.Println("0 ====>  ", vars)
+	idCmd := vars["id"]
 	w.Header().Set("Content-Type", "application/json")
+	// Va chercher le panier
+	uRep, err := infoCurrentUser(r)
+	fmt.Println("1 ====>  ", uRep)
+	if err != nil {
+		json.NewEncoder(w).Encode("Erreur Utilisateur")
+		return
+	}
+	con, err := grpc.Dial(COMMANDE_SERV, grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	commandeClient := commandepb.NewServiceCommandeClient(con)
+	p := &commandepb.ConfirmRequest{
+		CommandeID: idCmd,
+		UserID:     uRep.Utilisateur.ID,
+	}
+	fmt.Println("2 ====>  ", p)
+	result, err := commandeClient.Confirm(context.Background(), p)
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	fmt.Println("2 ====>  ", result)
+	// // Efface le panier
+	// conP, err := grpc.Dial(PANIER_SERV, grpc.WithInsecure())
+	// if err != nil {
+	// 	fmt.Printf("Error: %v", err)
+	// }
+	// panierClient := panierpb.NewServicePanierClient(conP)
+	// panier := &panierpb.PanierRequest{
+	// 	Panier: &panierpb.Panier{
+	// 		UtilisateurID: uRep.Utilisateur.ID,
+	// 		Article:       []*panierpb.Article{},
+	// 	},
+	// }
+	// resultP, err := panierClient.UpdatePanier(context.Background(), panier)
+	// if err != nil {
+	// 	fmt.Printf("Error: %v %v", err, resultP)
+	// }
+	// // retourne une commande
+	// fmt.Printf("3 ====>  %v", result.Commande)
+	// cmd, err := commandeDoc.FromCommandePB(result.Commande)
+	// if err != nil {
+	// 	fmt.Printf("Error: %v", err)
+	// }
+	// json.NewEncoder(w).Encode(cmd)
 }
 
 func CancelCommande(w http.ResponseWriter, r *http.Request) {
@@ -588,7 +694,7 @@ func authMiddleware(next http.Handler) http.HandlerFunc {
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
-	myRouter.Use(corsMiddleware)
+	// myRouter.Use(corsMiddleware)
 	myRouter.HandleFunc("/auth/token", createToken).Methods("GET")
 	myRouter.HandleFunc("/produit", GetProduits).Methods("GET")
 	myRouter.HandleFunc("/produit/{ref}", GetProduitByRef).Methods("GET")
@@ -599,13 +705,20 @@ func handleRequests() {
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(GetPanier))).Methods("GET")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("POST")
 	myRouter.HandleFunc("/panier", authMiddleware(http.HandlerFunc(UpdatePanier))).Methods("PUT")
+	myRouter.HandleFunc("/commande", authMiddleware(http.HandlerFunc(GetCommandes))).Methods("GET")
 	myRouter.HandleFunc("/commande/validation", authMiddleware(http.HandlerFunc(ValidCommande))).Methods("GET")
-	myRouter.HandleFunc("/commande/confirmation", authMiddleware(http.HandlerFunc(ConfirmCommande))).Methods("GET")
+	myRouter.HandleFunc("/commande/confirmation/{id}", authMiddleware(http.HandlerFunc(ConfirmCommande))).Methods("GET")
 	myRouter.HandleFunc("/commande/annulation", authMiddleware(http.HandlerFunc(CancelCommande))).Methods("GET")
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+		AllowCredentials: true,
+	})
 	///TODO: GetPointsRetrait
 	myRouter.Use(loggingMiddleware)
 	fmt.Println("Gateway => startup complete, listen on port ", GATEWAY_PORT)
-	log.Fatal(http.ListenAndServe(":"+GATEWAY_PORT, myRouter))
+	log.Fatal(http.ListenAndServe(":"+GATEWAY_PORT, c.Handler(myRouter)))
 }
 
 func main() {
